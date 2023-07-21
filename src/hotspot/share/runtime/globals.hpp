@@ -933,6 +933,11 @@ const int ObjectAlignmentInBytes = 8;
   product(bool, TraceCompilerThreads, false, DIAGNOSTIC,                    \
              "Trace creation and removal of compiler threads")              \
                                                                             \
+  product(ccstr, LogClassLoadingCauseFor, nullptr,                          \
+          "Apply -Xlog:class+load+cause* to classes whose fully "           \
+          "qualified name contains this string (\"*\" matches "             \
+          "any class).")                                                    \
+                                                                            \
   develop(bool, InjectCompilerCreationFailure, false,                       \
           "Inject thread creation failures for "                            \
           "UseDynamicNumberOfCompilerThreads")                              \
@@ -1239,7 +1244,7 @@ const int ObjectAlignmentInBytes = 8;
   product(intx,  AllocatePrefetchDistance, -1,                              \
           "Distance to prefetch ahead of allocation pointer. "              \
           "-1: use system-specific value (automatically determined")        \
-          constraint(AllocatePrefetchDistanceConstraintFunc,AfterMemoryInit)\
+          range(-1, 512)                                                    \
                                                                             \
   product(intx,  AllocatePrefetchLines, 3,                                  \
           "Number of lines to prefetch ahead of array allocation pointer")  \
@@ -1287,9 +1292,10 @@ const int ObjectAlignmentInBytes = 8;
           "(0 means none)")                                                 \
           range(0, max_jint)                                                \
                                                                             \
-  product(intx, SafepointTimeoutDelay, 10000,                               \
-          "Delay in milliseconds for option SafepointTimeout")              \
-          range(0, max_intx LP64_ONLY(/MICROUNITS))                         \
+  product(double, SafepointTimeoutDelay, 10000,                             \
+          "Delay in milliseconds for option SafepointTimeout; "             \
+          "supports sub-millisecond resolution with fractional values.")    \
+          range(0, max_jlongDouble LP64_ONLY(/MICROUNITS))                  \
                                                                             \
   product(bool, UseSystemMemoryBarrier, false,                              \
           "Try to enable system memory barrier if supported by OS")         \
@@ -1586,6 +1592,9 @@ const int ObjectAlignmentInBytes = 8;
                                                                             \
   develop(intx, TraceBytecodesAt, 0,                                        \
           "Trace bytecodes starting with specified bytecode number")        \
+                                                                            \
+  develop(intx, TraceBytecodesStopAt, 0,                                    \
+          "Stop bytecode tracing at the specified bytecode number")         \
                                                                             \
   /* Priorities */                                                          \
   product_pd(bool, UseThreadPriorities,  "Use native thread priorities")    \
@@ -1976,6 +1985,13 @@ const int ObjectAlignmentInBytes = 8;
           "1: monitors & legacy stack-locking (LM_LEGACY, default), "       \
           "2: monitors & new lightweight locking (LM_LIGHTWEIGHT)")         \
           range(0, 2)                                                       \
+                                                                            \
+  product(uint, TrimNativeHeapInterval, 0, EXPERIMENTAL,                    \
+          "Interval, in ms, at which the JVM will trim the native heap if " \
+          "the platform supports that. Lower values will reclaim memory "   \
+          "more eagerly at the cost of higher overhead. A value of 0 "      \
+          "(default) disables native heap trimming.")                       \
+          range(0, UINT_MAX)                                                \
 
 // end of RUNTIME_FLAGS
 
