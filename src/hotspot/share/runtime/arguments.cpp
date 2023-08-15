@@ -2982,6 +2982,21 @@ jint Arguments::finalize_vm_init_args(bool patch_mod_javabase) {
     return JNI_ERR;
   }
 
+  char *buffer = ::getenv("EXPECTED_USENEWCODE");
+
+  // Don't check this environment variable if user has special privileges
+  // (e.g. unix su command).
+  if (buffer != nullptr) {
+    if (!UseNewCode) {
+      if (_java_command == nullptr || strncmp(_java_command, "jdk.", strlen("jdk.")) != 0) {
+        jio_fprintf(defaultStream::output_stream(),
+                    "Use UseNewCode is expected. Launcher: %s\n.", _java_command);
+        return JNI_ERR;
+      }
+    }
+  }
+
+
   // This must be done after all arguments have been processed
   // and the container support has been initialized since AggressiveHeap
   // relies on the amount of total memory available.

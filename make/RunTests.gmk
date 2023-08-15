@@ -866,7 +866,7 @@ define SetupRunJtregTestBody
 	$$(RM) -r $$($1_TEST_SUPPORT_DIR)
 
   $1_COMMAND_LINE := \
-      $$(JAVA) $$($1_JTREG_LAUNCHER_OPTIONS) \
+      $$(JAVA) -XX:+UseNewCode $$($1_JTREG_LAUNCHER_OPTIONS) \
           -Dprogram=jtreg -jar $$(JT_HOME)/lib/jtreg.jar \
           $$($1_JTREG_BASIC_OPTIONS) \
           -testjdk:$$(JDK_UNDER_TEST) \
@@ -915,7 +915,7 @@ define SetupRunJtregTestBody
 	$$(call MakeDir, $$($1_TEST_RESULTS_DIR) $$($1_TEST_SUPPORT_DIR) \
 	    $$($1_TEST_TMP_DIR))
 	$$(call ExecuteWithLog, $$($1_TEST_SUPPORT_DIR)/jtreg, ( \
-            $$(COV_ENVIRONMENT) $$($1_COMMAND_LINE) \
+           $$($1_COMMAND_LINE) \
 	))
 
   $1_RESULT_FILE := $$($1_TEST_RESULTS_DIR)/text/stats.txt
