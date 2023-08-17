@@ -2957,6 +2957,32 @@ void Arguments::fix_appclasspath() {
   }
 }
 
+bool static starts_with(const char* java_command, const char* line) {
+  return strncmp(java_command, line, strlen(line)) == 0;
+}
+
+bool static should_fail(const char* java_command, const char* line) {
+  if (java_command == nullptr) {
+    return true;
+  }
+
+  // Skip jtreg jdk version check
+  if (starts_with(java_command, "com.sun.javatest.regtest.agent.GetSystemProperty")) {
+    return false;
+  }
+  // Skip driver & jtreg agents, it is the check for processed forked by test
+  if (starts_with(java_command, "com.sun.javatest.regtest.agent.AgentServer")) {
+    return false;
+  }
+  if (starts_with(java_command, "com.sun.javatest.regtest.agent.MainWrapper")) {
+    return false;
+  }
+  if (starts_with(java_command, "jdk.")) {
+    return false;
+  }
+  return true;
+}
+
 jint Arguments::finalize_vm_init_args(bool patch_mod_javabase) {
   // check if the default lib/endorsed directory exists; if so, error
   char path[JVM_MAXPATHLEN];
@@ -2988,9 +3014,9 @@ jint Arguments::finalize_vm_init_args(bool patch_mod_javabase) {
   // (e.g. unix su command).
   if (buffer != nullptr) {
     if (!UseNewCode) {
-      if (_java_command == nullptr || strncmp(_java_command, "jdk.", strlen("jdk.")) != 0) {
+      if (should_fail(_java_command, buffer)) {
         jio_fprintf(defaultStream::output_stream(),
-                    "Use UseNewCode is expected. Launcher: %s\n.", _java_command);
+                    "Use UseNewCode is expected. Launcher: '%s'\n.", _java_command);
         return JNI_ERR;
       }
     }
