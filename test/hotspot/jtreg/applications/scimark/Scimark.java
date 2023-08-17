@@ -35,6 +35,7 @@ import java.util.Map;
 
 public class Scimark {
     public static void main(String... args) throws Exception {
+
         OutputAnalyzer output = new OutputAnalyzer(ProcessTools.createTestJvm("-version")
                                                    .start());
         output.shouldHaveExitValue(0);
