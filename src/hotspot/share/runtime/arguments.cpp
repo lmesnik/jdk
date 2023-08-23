@@ -2977,6 +2977,9 @@ bool static should_fail(const char* java_command, const char* line) {
   if (starts_with(java_command, "com.sun.javatest.regtest.agent.MainWrapper")) {
     return false;
   }
+  if (starts_with(java_command, "java.base/sun.security.tools.keytool.Main")) {
+    return false;
+  }
   if (starts_with(java_command, "jdk.")) {
     return false;
   }
