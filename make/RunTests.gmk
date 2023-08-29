@@ -795,6 +795,10 @@ define SetupRunJtregTestBody
 
   $1_JTREG_BASIC_OPTIONS += -automatic -ignore:quiet
 
+  $1_JTREG_BASIC_OPTIONS += $$(addprefix $$(JTREG_PROBLEM_LIST_PREFIX), $$(wildcard \
+      $$(addprefix $$($1_TEST_ROOT)/, ProblemList-flagless.txt) \
+  ))
+
   # Make it possible to specify the JIB_DATA_DIR for tests using the
   # JIB Artifact resolver
   $1_JTREG_BASIC_OPTIONS += -e:JIB_DATA_DIR
