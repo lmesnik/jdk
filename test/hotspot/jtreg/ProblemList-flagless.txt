@@ -143,6 +143,8 @@ runtime/NMT/CommandLineEmptyArgument.java
 runtime/NMT/CommandLineInvalidArgument.java
 runtime/NMT/CommandLineTurnOffNMT.java
 runtime/NMT/JcmdWithNMTDisabled.java
+runtime/NMT/CommandLineDetail.java
+runtime/NMT/CommandLineSummary.java
 runtime/NMT/MallocLimitTest.java#compiler-limit-fatal
 runtime/NMT/MallocLimitTest.java#compiler-limit-oom
 runtime/NMT/MallocLimitTest.java#global-limit-fatal
@@ -189,13 +191,3 @@ serviceability/dcmd/framework/HelpTest.java
 serviceability/dcmd/framework/InvalidCommandTest.java
 serviceability/dcmd/framework/VMVersionTest.java
 serviceability/jdwp/AllModulesCommandTest.java
-serviceability/sa/TestCpoolForInvokeDynamic.java
-serviceability/sa/TestDefaultMethods.java
-serviceability/sa/TestG1HeapRegion.java
-serviceability/sa/TestInstanceKlassSize.java
-serviceability/sa/TestInstanceKlassSizeForInterface.java
-serviceability/sa/TestObjectAlignment.java
-serviceability/sa/TestObjectMonitorIterate.java
-serviceability/sa/UniqueVtableTest.java
-serviceability/sa/jmap-hprof/JMapHProfLargeHeapTest.java
-serviceability/jvmti/8036666/GetObjectLockCount.java
