@@ -24,6 +24,7 @@
 /*
  * @test
  * @library /test/lib
+ * @requires vm.flagless
  * @modules java.base/jdk.internal.misc
  *          java.compiler
  *          java.management

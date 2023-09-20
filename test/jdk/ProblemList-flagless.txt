@@ -1,3 +1,42 @@
+java/lang/instrument/PremainClass/InheritAgent0100.java 8316451 generic-all
+java/lang/instrument/PremainClass/InheritAgent1000.java 8316451 generic-all
+java/lang/instrument/PremainClass/InheritAgent1100.java 8316451 generic-all
+java/lang/instrument/PremainClass/NoPremainAgent.java 8316451 generic-all
+java/lang/instrument/PremainClass/NonPublicPremainAgent.java 8316451 generic-all
+java/lang/instrument/PremainClass/ZeroArgPremainAgent.java 8316451 generic-all
+
+java/lang/instrument/modules/AppendToClassPathModuleTest.java 8316452 generic-all
+
+javax/management/ImplementationVersion/ImplVersionTest.java 8316460 generic-all
+javax/management/remote/mandatory/connection/DefaultAgentFilterTest.java 8316460 generic-all
+javax/management/remote/mandatory/version/ImplVersionTest.java 8316460 generic-all
+javax/management/security/HashedPasswordFileTest.java 8316460 generic-all
+
+com/sun/management/HotSpotDiagnosticMXBean/CheckOrigin.java 8316445 generic-all
+
+sun/management/jdp/JdpDefaultsTest.java 8316446 generic-all
+sun/management/jdp/JdpJmxRemoteDynamicPortTest.java 8316446 generic-all
+sun/management/jdp/JdpOffTest.java 8316446 generic-all
+sun/management/jdp/JdpSpecificAddressTest.java 8316446 generic-all
+sun/management/jmxremote/bootstrap/CustomLauncherTest.java 8316447 generic-all
+sun/management/jmxremote/bootstrap/LocalManagementTest.java 8316447 generic-all
+sun/management/jmxremote/bootstrap/ReadWriteForbidsCreateTest.java 8316447 generic-all
+sun/management/jmxremote/startstop/JMXStartStopTest.java 8316447 generic-all
+sun/management/jmxremote/startstop/JMXStatusPerfCountersTest.java 8316447 generic-all
+sun/management/jmxremote/startstop/JMXStatusTest.java 8316447 generic-all
+
+sun/jvmstat/monitor/MonitoredVm/MonitorVmStartTerminate.java 8316462 generic-all
+
+sun/tools/jcmd/TestProcessHelper.java 8316464 generic-all
+sun/tools/jinfo/JInfoTest.java 8316464 generic-all
+sun/tools/jstat/JStatInterval.java  8316464 generic-all
+
+# JFR tests ignoring flags, no bug yet
+jdk/jfr/jvm/TestEventWriterLog.java
+jdk/jfr/jvm/TestModularImage.java
+jdk/jfr/startupargs/TestBadOptionValues.java
+jdk/jfr/startupargs/TestJFCWarnings.java
+
 com/sun/crypto/provider/KeyProtector/IterationCount.java
 java/io/Console/CharsetTest.java
 java/io/File/DeleteOnExitNPE.java

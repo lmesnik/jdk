@@ -1,3 +1,15 @@
+
+vmTestbase/nsk/jdi/Argument/value/value003/TestDescription.java 8316465 generic-all
+vmTestbase/nsk/jdi/Argument/value/value004/TestDescription.java 8316465 generic-all
+vmTestbase/nsk/jdi/ThreadReference/forceEarlyReturn/forceEarlyReturn010/TestDescription.java 8316465 generic-all
+vmTestbase/nsk/jdi/ThreadReference/forceEarlyReturn/forceEarlyReturn011/TestDescription.java 8316465 generic-all
+vmTestbase/nsk/jdi/ThreadReference/forceEarlyReturn/forceEarlyReturn012/TestDescription.java 8316465 generic-all
+vmTestbase/nsk/jdi/ThreadReference/ownedMonitorsAndFrames/ownedMonitorsAndFrames008/TestDescription.java 8316465 generic-all
+vmTestbase/vm/mlvm/indy/func/jdi/breakpoint/Test.java 8316465 generic-all
+vmTestbase/vm/mlvm/indy/func/jdi/breakpointOtherStratum/Test.java 8316465 generic-all
+vmTestbase/vm/mlvm/meth/func/jdi/breakpoint/Test.java 8316465 generic-all
+vmTestbase/vm/mlvm/meth/func/jdi/breakpointOtherStratum/Test.java 8316465 generic-all
+
 compiler/ciReplay/TestInvalidReplayFile.java
 compiler/codecache/CheckCodeCacheInfo.java
 compiler/codecache/CodeCacheFullCountTest.java
@@ -8,6 +20,7 @@ compiler/debug/TestGenerateStressSeed.java
 compiler/debug/TestStressCM.java
 compiler/debug/TestStressIGVNAndCCP.java
 compiler/debug/VerifyAdapterSharing.java
+compiler/jvmci/compilerToVM/GetFlagValueTest.java
 compiler/rangechecks/TestRangeCheckHoistingScaledIV.java
 compiler/sharedstubs/SharedStubToInterpTest.java
 gc/TestAgeOutput.java#id0
@@ -109,33 +122,8 @@ runtime/BootClassAppendProp/BootClassPathAppend.java
 runtime/BootstrapMethod/TestLambdaExceptionInInitializer.java
 runtime/ClassFile/PreviewVersion.java
 runtime/EnclosingMethodAttr/EnclMethodAttr.java
-runtime/ErrorHandling/BadNativeStackInErrorHandlingTest.java
-runtime/ErrorHandling/ClassPathEnvVar.java
 runtime/ErrorHandling/CreateCoredumpOnCrash.java
-runtime/ErrorHandling/ErrorFileOverwriteTest.java
-runtime/ErrorHandling/ErrorFileRedirectTest.java
-runtime/ErrorHandling/MachCodeFramesInErrorFile.java
-runtime/ErrorHandling/NestedThreadsListHandleInErrorHandlingTest.java
-runtime/ErrorHandling/ReattemptErrorTest.java
-runtime/ErrorHandling/ResourceMarkTest.java
-runtime/ErrorHandling/SafeFetchInErrorHandlingTest.java
-runtime/ErrorHandling/SecondaryErrorTest.java#id0
-runtime/ErrorHandling/SecondaryErrorTest.java#id1
-runtime/ErrorHandling/ShowRegistersOnAssertTest.java
-runtime/ErrorHandling/TestAbortVmOnException.java
-runtime/ErrorHandling/TestCrashOnOutOfMemoryError.java
-runtime/ErrorHandling/TestExitOnOutOfMemoryError.java
 runtime/ErrorHandling/TestGZippedHeapDumpOnOutOfMemoryError.java#id0
-runtime/ErrorHandling/TestGZippedHeapDumpOnOutOfMemoryError.java#id1
-runtime/ErrorHandling/TestHeapDumpOnOutOfMemoryError.java#id0
-runtime/ErrorHandling/TestHeapDumpOnOutOfMemoryError.java#id1
-runtime/ErrorHandling/TestHeapDumpPath.java
-runtime/ErrorHandling/TestOnError.java
-runtime/ErrorHandling/TestOnOutOfMemoryError.java
-runtime/ErrorHandling/TestSigInfoInHsErrFile.java
-runtime/ErrorHandling/ThreadsListHandleInErrorHandlingTest.java
-runtime/ErrorHandling/TimeoutInErrorHandlingTest.java#default
-runtime/ErrorHandling/TimeoutInErrorHandlingTest.java#with-on-error
 runtime/LocalLong/LocalLongTest.java
 runtime/LocalVariableTable/TestLVT.java
 runtime/MemberName/MemberNameLeak.java
@@ -170,13 +158,16 @@ runtime/cds/TestCDSVMCrash.java
 runtime/cds/appcds/CommandLineFlagCombo.java
 runtime/cds/appcds/FillerObjectLoadTest.java
 runtime/cds/appcds/TestDumpClassListSource.java
+runtime/cds/appcds/dynamicArchive/LambdasInTwoArchives.java
 runtime/cds/appcds/dynamicArchive/TestAutoCreateSharedArchiveUpgrade.java
 runtime/cds/appcds/jcmd/JCmdTestFileSafety.java
 runtime/cds/appcds/jcmd/JCmdTestStaticDump.java
+runtime/cds/appcds/sharedStrings/ResolvedReferencesNotNullTest.java
 runtime/contended/Options.java
 runtime/duplAttributes/DuplAttributesTest.java
 runtime/execstack/Testexecstack.java
 runtime/jni/checked/TestPrimitiveArrayCriticalWithBadParam.java
+runtime/jni/getCreatedJavaVMs/TestGetCreatedJavaVMs.java
 runtime/jsig/Testjsig.java
 runtime/logging/FoldMultilinesTest.java
 runtime/os/THPsInThreadStackPreventionTest.java#ENABLED
@@ -187,7 +178,16 @@ runtime/os/TestTrimNative.java#trimNative
 runtime/os/TestTrimNative.java#trimNativeHighInterval
 runtime/os/TestTrimNative.java#trimNativeLowInterval
 runtime/posixSig/TestPosixSig.java
-serviceability/dcmd/framework/HelpTest.java
-serviceability/dcmd/framework/InvalidCommandTest.java
-serviceability/dcmd/framework/VMVersionTest.java
-serviceability/jdwp/AllModulesCommandTest.java
+
+
+## Tests which start process without flags intentionally
+
+## Start debugger
+serviceability/sa/UniqueVtableTest.java
+serviceability/sa/TestObjectMonitorIterate.java
+serviceability/sa/TestObjectAlignment.java
+serviceability/sa/TestInstanceKlassSizeForInterface.java
+serviceability/sa/TestInstanceKlassSize.java
+serviceability/sa/TestG1HeapRegion.java
+serviceability/sa/TestDefaultMethods.java
+serviceability/sa/TestCpoolForInvokeDynamic.java
