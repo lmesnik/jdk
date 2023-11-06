@@ -10,129 +10,129 @@ vmTestbase/vm/mlvm/indy/func/jdi/breakpointOtherStratum/Test.java 8316465 generi
 vmTestbase/vm/mlvm/meth/func/jdi/breakpoint/Test.java 8316465 generic-all
 vmTestbase/vm/mlvm/meth/func/jdi/breakpointOtherStratum/Test.java 8316465 generic-all
 
-compiler/ciReplay/TestInvalidReplayFile.java
-compiler/codecache/CheckCodeCacheInfo.java
-compiler/codecache/CodeCacheFullCountTest.java
-compiler/codecache/cli/TestSegmentedCodeCacheOption.java
-compiler/codecache/cli/codeheapsize/TestCodeHeapSizeOptions.java
-compiler/codecache/cli/printcodecache/TestPrintCodeCacheOption.java
-compiler/debug/TestGenerateStressSeed.java
-compiler/debug/TestStressCM.java
-compiler/debug/TestStressIGVNAndCCP.java
-compiler/debug/VerifyAdapterSharing.java
-compiler/jvmci/compilerToVM/GetFlagValueTest.java
-compiler/rangechecks/TestRangeCheckHoistingScaledIV.java
-compiler/sharedstubs/SharedStubToInterpTest.java
+compiler/ciReplay/TestInvalidReplayFile.java 0000000 generic-all
+compiler/codecache/CheckCodeCacheInfo.java 0000000 generic-all
+compiler/codecache/CodeCacheFullCountTest.java 0000000 generic-all
+compiler/codecache/cli/TestSegmentedCodeCacheOption.java 0000000 generic-all
+compiler/codecache/cli/codeheapsize/TestCodeHeapSizeOptions.java 0000000 generic-all
+compiler/codecache/cli/printcodecache/TestPrintCodeCacheOption.java 0000000 generic-all
+compiler/debug/TestGenerateStressSeed.java 0000000 generic-all
+compiler/debug/TestStressCM.java 0000000 generic-all
+compiler/debug/TestStressIGVNAndCCP.java 0000000 generic-all
+compiler/debug/VerifyAdapterSharing.java 0000000 generic-all
+compiler/jvmci/compilerToVM/GetFlagValueTest.java 0000000 generic-all
+compiler/rangechecks/TestRangeCheckHoistingScaledIV.java 0000000 generic-all
+compiler/sharedstubs/SharedStubToInterpTest.java 0000000 generic-all
 gc/TestAgeOutput.java#id0
 gc/TestAgeOutput.java#id1
-gc/TestCardTablePageCommits.java
-gc/TestNumWorkerOutput.java
-gc/TestSmallHeap.java
-gc/arguments/TestAggressiveHeap.java
-gc/arguments/TestArrayAllocatorMallocLimit.java
-gc/arguments/TestCompressedClassFlags.java
-gc/arguments/TestDisableDefaultGC.java
-gc/arguments/TestG1ConcMarkStepDurationMillis.java
-gc/arguments/TestG1ConcRefinementThreads.java
-gc/arguments/TestG1HeapRegionSize.java
-gc/arguments/TestG1HeapSizeFlags.java
-gc/arguments/TestG1PercentageOptions.java
-gc/arguments/TestG1RemSetFlags.java
-gc/arguments/TestHeapFreeRatio.java
-gc/arguments/TestInitialTenuringThreshold.java
+gc/TestCardTablePageCommits.java 0000000 generic-all
+gc/TestNumWorkerOutput.java 0000000 generic-all
+gc/TestSmallHeap.java 0000000 generic-all
+gc/arguments/TestAggressiveHeap.java 0000000 generic-all
+gc/arguments/TestArrayAllocatorMallocLimit.java 0000000 generic-all
+gc/arguments/TestCompressedClassFlags.java 0000000 generic-all
+gc/arguments/TestDisableDefaultGC.java 0000000 generic-all
+gc/arguments/TestG1ConcMarkStepDurationMillis.java 0000000 generic-all
+gc/arguments/TestG1ConcRefinementThreads.java 0000000 generic-all
+gc/arguments/TestG1HeapRegionSize.java 0000000 generic-all
+gc/arguments/TestG1HeapSizeFlags.java 0000000 generic-all
+gc/arguments/TestG1PercentageOptions.java 0000000 generic-all
+gc/arguments/TestG1RemSetFlags.java 0000000 generic-all
+gc/arguments/TestHeapFreeRatio.java 0000000 generic-all
+gc/arguments/TestInitialTenuringThreshold.java 0000000 generic-all
 gc/arguments/TestMaxNewSize.java#id0
 gc/arguments/TestMaxNewSize.java#id1
 gc/arguments/TestMaxNewSize.java#id2
-gc/arguments/TestMaxRAMFlags.java
-gc/arguments/TestMinInitialErgonomics.java
-gc/arguments/TestNewSizeThreadIncrease.java
-gc/arguments/TestObjectTenuringFlags.java
-gc/arguments/TestParallelGCThreads.java
-gc/arguments/TestParallelHeapSizeFlags.java
-gc/arguments/TestParallelRefProc.java
-gc/arguments/TestSelectDefaultGC.java
-gc/arguments/TestSerialHeapSizeFlags.java
-gc/arguments/TestSmallInitialHeapWithLargePageAndNUMA.java
-gc/arguments/TestUnrecognizedVMOptionsHandling.java
+gc/arguments/TestMaxRAMFlags.java 0000000 generic-all
+gc/arguments/TestMinInitialErgonomics.java 0000000 generic-all
+gc/arguments/TestNewSizeThreadIncrease.java 0000000 generic-all
+gc/arguments/TestObjectTenuringFlags.java 0000000 generic-all
+gc/arguments/TestParallelGCThreads.java 0000000 generic-all
+gc/arguments/TestParallelHeapSizeFlags.java 0000000 generic-all
+gc/arguments/TestParallelRefProc.java 0000000 generic-all
+gc/arguments/TestSelectDefaultGC.java 0000000 generic-all
+gc/arguments/TestSerialHeapSizeFlags.java 0000000 generic-all
+gc/arguments/TestSmallInitialHeapWithLargePageAndNUMA.java 0000000 generic-all
+gc/arguments/TestUnrecognizedVMOptionsHandling.java 0000000 generic-all
 gc/arguments/TestUseCompressedOopsErgo.java#id0
 gc/arguments/TestUseCompressedOopsErgo.java#id1
 gc/arguments/TestUseCompressedOopsErgo.java#id2
-gc/class_unloading/TestG1ClassUnloadingHWM.java
-gc/epsilon/TestDieDefault.java
-gc/epsilon/TestDieWithHeapDump.java
-gc/epsilon/TestDieWithOnError.java
-gc/ergonomics/TestDynamicNumberOfGCThreads.java
-gc/ergonomics/TestInitialGCThreadLogging.java
-gc/g1/Test2GbHeap.java
-gc/g1/TestEagerReclaimHumongousRegions.java
-gc/g1/TestEagerReclaimHumongousRegionsClearMarkBits.java
-gc/g1/TestEagerReclaimHumongousRegionsLog.java
-gc/g1/TestEagerReclaimHumongousRegionsWithRefs.java
-gc/g1/TestEvacuationFailure.java
-gc/g1/TestG1SkipCompaction.java
-gc/g1/TestG1TraceEagerReclaimHumongousObjects.java
-gc/g1/TestGCLogMessages.java
-gc/g1/TestHumongousAllocConcurrentStart.java
-gc/g1/TestHumongousAllocNearlyFullRegion.java
-gc/g1/TestHumongousCodeCacheRoots.java
-gc/g1/TestHumongousConcurrentStartUndo.java
-gc/g1/TestLargePageUseForAuxMemory.java
-gc/g1/TestLargePageUseForHeap.java
-gc/g1/TestMarkStackSizes.java
+gc/class_unloading/TestG1ClassUnloadingHWM.java 0000000 generic-all
+gc/epsilon/TestDieDefault.java 0000000 generic-all
+gc/epsilon/TestDieWithHeapDump.java 0000000 generic-all
+gc/epsilon/TestDieWithOnError.java 0000000 generic-all
+gc/ergonomics/TestDynamicNumberOfGCThreads.java 0000000 generic-all
+gc/ergonomics/TestInitialGCThreadLogging.java 0000000 generic-all
+gc/g1/Test2GbHeap.java 0000000 generic-all
+gc/g1/TestEagerReclaimHumongousRegions.java 0000000 generic-all
+gc/g1/TestEagerReclaimHumongousRegionsClearMarkBits.java 0000000 generic-all
+gc/g1/TestEagerReclaimHumongousRegionsLog.java 0000000 generic-all
+gc/g1/TestEagerReclaimHumongousRegionsWithRefs.java 0000000 generic-all
+gc/g1/TestEvacuationFailure.java 0000000 generic-all
+gc/g1/TestG1SkipCompaction.java 0000000 generic-all
+gc/g1/TestG1TraceEagerReclaimHumongousObjects.java 0000000 generic-all
+gc/g1/TestGCLogMessages.java 0000000 generic-all
+gc/g1/TestHumongousAllocConcurrentStart.java 0000000 generic-all
+gc/g1/TestHumongousAllocNearlyFullRegion.java 0000000 generic-all
+gc/g1/TestHumongousCodeCacheRoots.java 0000000 generic-all
+gc/g1/TestHumongousConcurrentStartUndo.java 0000000 generic-all
+gc/g1/TestLargePageUseForAuxMemory.java 0000000 generic-all
+gc/g1/TestLargePageUseForHeap.java 0000000 generic-all
+gc/g1/TestMarkStackSizes.java 0000000 generic-all
 gc/g1/TestMixedGCLiveThreshold.java#0percent
 gc/g1/TestMixedGCLiveThreshold.java#100percent
 gc/g1/TestMixedGCLiveThreshold.java#25percent
-gc/g1/TestOneEdenRegionAfterGC.java
-gc/g1/TestPLABOutput.java
-gc/g1/TestPLABSizeBounds.java
-gc/g1/TestPeriodicLogMessages.java
-gc/g1/TestPrintRegionRememberedSetInfo.java
-gc/g1/TestRemsetLogging.java
-gc/g1/TestRemsetLoggingPerRegion.java
-gc/g1/TestRemsetLoggingThreads.java
-gc/g1/TestSharedArchiveWithPreTouch.java
-gc/g1/TestShrinkDefragmentedHeap.java
-gc/g1/TestSkipRebuildRemsetPhase.java
-gc/g1/TestVerifyGCType.java
-gc/g1/mixedgc/TestLogging.java
-gc/logging/TestDeprecatedPrintFlags.java
-gc/logging/TestGCId.java
-gc/logging/TestPrintReferences.java
-gc/metaspace/TestMetaspaceSizeFlags.java
+gc/g1/TestOneEdenRegionAfterGC.java 0000000 generic-all
+gc/g1/TestPLABOutput.java 0000000 generic-all
+gc/g1/TestPLABSizeBounds.java 0000000 generic-all
+gc/g1/TestPeriodicLogMessages.java 0000000 generic-all
+gc/g1/TestPrintRegionRememberedSetInfo.java 0000000 generic-all
+gc/g1/TestRemsetLogging.java 0000000 generic-all
+gc/g1/TestRemsetLoggingPerRegion.java 0000000 generic-all
+gc/g1/TestRemsetLoggingThreads.java 0000000 generic-all
+gc/g1/TestSharedArchiveWithPreTouch.java 0000000 generic-all
+gc/g1/TestShrinkDefragmentedHeap.java 0000000 generic-all
+gc/g1/TestSkipRebuildRemsetPhase.java 0000000 generic-all
+gc/g1/TestVerifyGCType.java 0000000 generic-all
+gc/g1/mixedgc/TestLogging.java 0000000 generic-all
+gc/logging/TestDeprecatedPrintFlags.java 0000000 generic-all
+gc/logging/TestGCId.java 0000000 generic-all
+gc/logging/TestPrintReferences.java 0000000 generic-all
+gc/metaspace/TestMetaspaceSizeFlags.java 0000000 generic-all
 gc/metaspace/TestSizeTransitions.java#id0
 gc/metaspace/TestSizeTransitions.java#id1
 gc/metaspace/TestSizeTransitions.java#id2
-gc/serial/HeapChangeLogging.java
-gc/stress/TestStressG1Uncommit.java
-gc/x/TestAllocateHeapAt.java
-gc/x/TestPageCacheFlush.java
-gc/x/TestSmallHeap.java
-gc/z/TestAllocateHeapAt.java
-gc/z/TestPageCacheFlush.java
-gc/z/TestSmallHeap.java
-gtest/AsyncLogGtest.java
+gc/serial/HeapChangeLogging.java 0000000 generic-all
+gc/stress/TestStressG1Uncommit.java 0000000 generic-all
+gc/x/TestAllocateHeapAt.java 0000000 generic-all
+gc/x/TestPageCacheFlush.java 0000000 generic-all
+gc/x/TestSmallHeap.java 0000000 generic-all
+gc/z/TestAllocateHeapAt.java 0000000 generic-all
+gc/z/TestPageCacheFlush.java 0000000 generic-all
+gc/z/TestSmallHeap.java 0000000 generic-all
+gtest/AsyncLogGtest.java 0000000 generic-all
 gtest/NMTGtests.java#nmt-detail
 gtest/NMTGtests.java#nmt-off
 gtest/NMTGtests.java#nmt-summary
-gtest/NativeHeapTrimmerGtest.java
-runtime/7158988/FieldMonitor.java
-runtime/8176717/TestInheritFD.java
-runtime/BadObjectClass/BootstrapRedefine.java
-runtime/BootClassAppendProp/BootClassPathAppend.java
-runtime/BootstrapMethod/TestLambdaExceptionInInitializer.java
-runtime/ClassFile/PreviewVersion.java
-runtime/EnclosingMethodAttr/EnclMethodAttr.java
-runtime/ErrorHandling/CreateCoredumpOnCrash.java
+gtest/NativeHeapTrimmerGtest.java 0000000 generic-all
+runtime/7158988/FieldMonitor.java 0000000 generic-all
+runtime/8176717/TestInheritFD.java 0000000 generic-all
+runtime/BadObjectClass/BootstrapRedefine.java 0000000 generic-all
+runtime/BootClassAppendProp/BootClassPathAppend.java 0000000 generic-all
+runtime/BootstrapMethod/TestLambdaExceptionInInitializer.java 0000000 generic-all
+runtime/ClassFile/PreviewVersion.java 0000000 generic-all
+runtime/EnclosingMethodAttr/EnclMethodAttr.java 0000000 generic-all
+runtime/ErrorHandling/CreateCoredumpOnCrash.java 0000000 generic-all
 runtime/ErrorHandling/TestGZippedHeapDumpOnOutOfMemoryError.java#id0
-runtime/LocalLong/LocalLongTest.java
-runtime/LocalVariableTable/TestLVT.java
-runtime/MemberName/MemberNameLeak.java
-runtime/NMT/CommandLineEmptyArgument.java
-runtime/NMT/CommandLineInvalidArgument.java
-runtime/NMT/CommandLineTurnOffNMT.java
-runtime/NMT/JcmdWithNMTDisabled.java
-runtime/NMT/CommandLineDetail.java
-runtime/NMT/CommandLineSummary.java
+runtime/LocalLong/LocalLongTest.java 0000000 generic-all
+runtime/LocalVariableTable/TestLVT.java 0000000 generic-all
+runtime/MemberName/MemberNameLeak.java 0000000 generic-all
+runtime/NMT/CommandLineEmptyArgument.java 0000000 generic-all
+runtime/NMT/CommandLineInvalidArgument.java 0000000 generic-all
+runtime/NMT/CommandLineTurnOffNMT.java 0000000 generic-all
+runtime/NMT/JcmdWithNMTDisabled.java 0000000 generic-all
+runtime/NMT/CommandLineDetail.java 0000000 generic-all
+runtime/NMT/CommandLineSummary.java 0000000 generic-all
 runtime/NMT/MallocLimitTest.java#compiler-limit-fatal
 runtime/NMT/MallocLimitTest.java#compiler-limit-oom
 runtime/NMT/MallocLimitTest.java#global-limit-fatal
@@ -143,51 +143,51 @@ runtime/NMT/NMTInitializationTest.java#default_long-detail
 runtime/NMT/NMTInitializationTest.java#default_long-off
 runtime/NMT/NMTInitializationTest.java#normal-detail
 runtime/NMT/NMTInitializationTest.java#normal-off
-runtime/NMT/NMTWithCDS.java
-runtime/NMT/PrintNMTStatistics.java
-runtime/NMT/PrintNMTStatisticsWithNMTDisabled.java
-runtime/ReservedStack/ReservedStackTest.java
-runtime/ReservedStack/ReservedStackTestCompiler.java
-runtime/StackGap/TestStackGap.java
-runtime/StackGuardPages/TestStackGuardPages.java
-runtime/TLS/TestTLS.java
-runtime/Thread/TestAlwaysPreTouchStacks.java
-runtime/Thread/TooSmallStackSize.java
-runtime/XCheckJniJsig/XCheckJSig.java
-runtime/cds/TestCDSVMCrash.java
-runtime/cds/appcds/CommandLineFlagCombo.java
-runtime/cds/appcds/FillerObjectLoadTest.java
-runtime/cds/appcds/TestDumpClassListSource.java
-runtime/cds/appcds/dynamicArchive/LambdasInTwoArchives.java
-runtime/cds/appcds/dynamicArchive/TestAutoCreateSharedArchiveUpgrade.java
-runtime/cds/appcds/jcmd/JCmdTestFileSafety.java
-runtime/cds/appcds/jcmd/JCmdTestStaticDump.java
-runtime/cds/appcds/sharedStrings/ResolvedReferencesNotNullTest.java
-runtime/contended/Options.java
-runtime/duplAttributes/DuplAttributesTest.java
-runtime/execstack/Testexecstack.java
-runtime/jni/checked/TestPrimitiveArrayCriticalWithBadParam.java
-runtime/jni/getCreatedJavaVMs/TestGetCreatedJavaVMs.java
-runtime/jsig/Testjsig.java
-runtime/logging/FoldMultilinesTest.java
+runtime/NMT/NMTWithCDS.java 0000000 generic-all
+runtime/NMT/PrintNMTStatistics.java 0000000 generic-all
+runtime/NMT/PrintNMTStatisticsWithNMTDisabled.java 0000000 generic-all
+runtime/ReservedStack/ReservedStackTest.java 0000000 generic-all
+runtime/ReservedStack/ReservedStackTestCompiler.java 0000000 generic-all
+runtime/StackGap/TestStackGap.java 0000000 generic-all
+runtime/StackGuardPages/TestStackGuardPages.java 0000000 generic-all
+runtime/TLS/TestTLS.java 0000000 generic-all
+runtime/Thread/TestAlwaysPreTouchStacks.java 0000000 generic-all
+runtime/Thread/TooSmallStackSize.java 0000000 generic-all
+runtime/XCheckJniJsig/XCheckJSig.java 0000000 generic-all
+runtime/cds/TestCDSVMCrash.java 0000000 generic-all
+runtime/cds/appcds/CommandLineFlagCombo.java 0000000 generic-all
+runtime/cds/appcds/FillerObjectLoadTest.java 0000000 generic-all
+runtime/cds/appcds/TestDumpClassListSource.java 0000000 generic-all
+runtime/cds/appcds/dynamicArchive/LambdasInTwoArchives.java 0000000 generic-all
+runtime/cds/appcds/dynamicArchive/TestAutoCreateSharedArchiveUpgrade.java 0000000 generic-all
+runtime/cds/appcds/jcmd/JCmdTestFileSafety.java 0000000 generic-all
+runtime/cds/appcds/jcmd/JCmdTestStaticDump.java 0000000 generic-all
+runtime/cds/appcds/sharedStrings/ResolvedReferencesNotNullTest.java 0000000 generic-all
+runtime/contended/Options.java 0000000 generic-all
+runtime/duplAttributes/DuplAttributesTest.java 0000000 generic-all
+runtime/execstack/Testexecstack.java 0000000 generic-all
+runtime/jni/checked/TestPrimitiveArrayCriticalWithBadParam.java 0000000 generic-all
+runtime/jni/getCreatedJavaVMs/TestGetCreatedJavaVMs.java 0000000 generic-all
+runtime/jsig/Testjsig.java 0000000 generic-all
+runtime/logging/FoldMultilinesTest.java 0000000 generic-all
 runtime/os/THPsInThreadStackPreventionTest.java#ENABLED
-runtime/os/TestHugePageDetection.java
+runtime/os/TestHugePageDetection.java 0000000 generic-all
 runtime/os/TestTrimNative.java#testOffByDefault
 runtime/os/TestTrimNative.java#testOffExplicit
 runtime/os/TestTrimNative.java#trimNative
 runtime/os/TestTrimNative.java#trimNativeHighInterval
 runtime/os/TestTrimNative.java#trimNativeLowInterval
-runtime/posixSig/TestPosixSig.java
+runtime/posixSig/TestPosixSig.java 0000000 generic-all
 
 
 ## Tests which start process without flags intentionally
 
 ## Start debugger
-serviceability/sa/UniqueVtableTest.java
-serviceability/sa/TestObjectMonitorIterate.java
-serviceability/sa/TestObjectAlignment.java
-serviceability/sa/TestInstanceKlassSizeForInterface.java
-serviceability/sa/TestInstanceKlassSize.java
-serviceability/sa/TestG1HeapRegion.java
-serviceability/sa/TestDefaultMethods.java
-serviceability/sa/TestCpoolForInvokeDynamic.java
+serviceability/sa/UniqueVtableTest.java 0000000 generic-all
+serviceability/sa/TestObjectMonitorIterate.java 0000000 generic-all
+serviceability/sa/TestObjectAlignment.java 0000000 generic-all
+serviceability/sa/TestInstanceKlassSizeForInterface.java 0000000 generic-all
+serviceability/sa/TestInstanceKlassSize.java 0000000 generic-all
+serviceability/sa/TestG1HeapRegion.java 0000000 generic-all
+serviceability/sa/TestDefaultMethods.java 0000000 generic-all
+serviceability/sa/TestCpoolForInvokeDynamic.java 0000000 generic-all

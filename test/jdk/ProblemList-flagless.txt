@@ -19,6 +19,7 @@ sun/management/jdp/JdpJmxRemoteDynamicPortTest.java 8316446 generic-all
 sun/management/jdp/JdpOffTest.java 8316446 generic-all
 sun/management/jdp/JdpSpecificAddressTest.java 8316446 generic-all
 sun/management/jmxremote/bootstrap/CustomLauncherTest.java 8316447 generic-all
+sun/management/jmxremote/bootstrap/JMXInterfaceBindingTest.java 8316447 generic-all
 sun/management/jmxremote/bootstrap/LocalManagementTest.java 8316447 generic-all
 sun/management/jmxremote/bootstrap/ReadWriteForbidsCreateTest.java 8316447 generic-all
 sun/management/jmxremote/startstop/JMXStartStopTest.java 8316447 generic-all
@@ -32,197 +33,226 @@ sun/tools/jinfo/JInfoTest.java 8316464 generic-all
 sun/tools/jstat/JStatInterval.java  8316464 generic-all
 
 # JFR tests ignoring flags, no bug yet
-jdk/jfr/jvm/TestEventWriterLog.java
-jdk/jfr/jvm/TestModularImage.java
-jdk/jfr/startupargs/TestBadOptionValues.java
-jdk/jfr/startupargs/TestJFCWarnings.java
+jdk/jfr/jvm/TestEventWriterLog.java 0000000 generic-all
+jdk/jfr/jvm/TestModularImage.java 0000000 generic-all
+jdk/jfr/startupargs/TestBadOptionValues.java 0000000 generic-all
+jdk/jfr/startupargs/TestJFCWarnings.java 0000000 generic-all
 
-java/net/ServerSocket/AcceptInheritHandle.java
+jni/nullCaller/NullCallerTest.java 0000000 generic-all
+
+java/lang/invoke/condy/CondyNestedResolutionTest.java 0000000 generic-all
+java/lang/invoke/findSpecial/FindSpecialTest.java 0000000 generic-all
+java/lang/invoke/lambda/LambdaAccessControlDoPrivilegedTest.java 0000000 generic-all
+java/lang/invoke/lambda/LambdaAsm.java 0000000 generic-all
+java/lang/invoke/lambda/LogGeneratedClassesTest.java 0000000 generic-all
+java/lang/reflect/exeCallerAccessTest/CallerAccessTest.java 0000000 generic-all
+java/util/Calendar/SupplementalJapaneseEraTestRun.java 0000000 generic-all
+java/util/Currency/PropertiesTest.sh 0000000 generic-all
+java/util/Locale/LocaleProvidersRun.java  0000000 generic-all
+java/util/ResourceBundle/Control/MissingResourceCauseTestRun.java 0000000 generic-all
+java/util/ResourceBundle/modules/basic/BasicTest.java 0000000 generic-all
+java/util/ResourceBundle/modules/layer/LayerTest.java 0000000 generic-all
+java/util/ResourceBundle/modules/unnamed/UnNamedTest.java 0000000 generic-all
+java/util/ResourceBundle/modules/visibility/VisibilityTest.java 0000000 generic-all
+java/util/TimeZone/CustomTzIDCheckDST.java 0000000 generic-all
+java/util/TimeZone/TimeZoneDatePermissionCheckRun.java 0000000 generic-all
+java/util/logging/LoggingDeadlock2.java 0000000 generic-all
+java/util/zip/EntryCount64k.java 0000000 generic-all
+jdk/incubator/vector/LoadJsvmlTest.java 0000000 generic-all
+jdk/internal/loader/URLClassPath/LargeClasspathWithPkgPrefix.java 0000000 generic-all
+jdk/internal/misc/VM/RuntimeArguments.java 0000000 generic-all
+jdk/modules/incubator/DefaultImage.java 0000000 generic-all
+jdk/modules/incubator/ImageModules.java 0000000 generic-all
+
+java/lang/instrument/RedefineSubclassWithTwoInterfaces.sh 0000000 generic-all
+java/lang/instrument/RedefineMethodWithAnnotations.sh 0000000 generic-all
+java/lang/instrument/RedefineMethodInBacktrace.sh 0000000 generic-all
+java/lang/instrument/RedefineMethodDelInvoke.sh 0000000 generic-all
+java/lang/instrument/RedefineClassWithNativeMethod.sh 0000000 generic-all
+java/lang/instrument/ManifestTest.sh 0000000 generic-all
+java/lang/instrument/BootClassPath/BootClassPathTest.sh 0000000 generic-all
+java/lang/instrument/appendToClassLoaderSearch/CircularityErrorTest.sh 0000000 generic-all
+java/lang/instrument/appendToClassLoaderSearch/ClassUnloadTest.sh 0000000 generic-all
+java/lang/instrument/appendToClassLoaderSearch/run_tests.sh 0000000 generic-all
+java/lang/annotation/LoaderLeakTest.java 0000000 generic-all
+java/lang/Thread/UncaughtExceptionsTest.java 0000000 generic-all
+java/lang/System/SecurityManagerWarnings.java 0000000 generic-all
+java/lang/System/LoggerFinder/modules/UnnamedLoggerForJDKTest.java 0000000 generic-all
+java/lang/System/LoggerFinder/modules/UnnamedLoggerForImageTest.java 0000000 generic-all
+java/lang/System/LoggerFinder/modules/NamedLoggerForJDKTest.java 0000000 generic-all
+java/lang/System/LoggerFinder/modules/NamedLoggerForImageTest.java 0000000 generic-all
+java/lang/System/LoggerFinder/modules/LoggerInImageTest.java 0000000 generic-all
+java/lang/System/LoggerFinder/modules/JDKLoggerForJDKTest.java 0000000 generic-all
+java/lang/System/LoggerFinder/modules/JDKLoggerForImageTest.java 0000000 generic-all
+java/lang/SecurityManager/modules/CustomSecurityManagerTest.java 0000000 generic-all
+java/lang/RuntimeTests/exec/SetCwd.java 0000000 generic-all
+java/lang/RuntimeTests/exec/ExitValue.java 0000000 generic-all
+java/lang/RuntimeTests/exec/ExecWithLotsOfArgs.java 0000000 generic-all
+java/lang/RuntimeTests/exec/Duped.java 0000000 generic-all
+java/lang/RuntimeTests/exec/ArgWithSpaceAndFinalBackslash.java 0000000 generic-all
+java/lang/RuntimeTests/RuntimeExitLogTest.java 0000000 generic-all
+java/lang/ProcessHandle/TreeTest.java 0000000 generic-all
+java/lang/ProcessHandle/OnExitTest.java 0000000 generic-all
+java/lang/ProcessBuilder/SkipTest.java 0000000 generic-all
+java/lang/ProcessBuilder/RedirectAttack.java 0000000 generic-all
+java/lang/ProcessBuilder/ReaderWriterTest.java 0000000 generic-all
+java/lang/ProcessBuilder/ProcessStartLoggingTest.java 0000000 generic-all
+java/lang/ProcessBuilder/JspawnhelperProtocol.java 0000000 generic-all
+java/lang/ProcessBuilder/InheritIOTest.java 0000000 generic-all
+java/lang/ProcessBuilder/Basic.java#id1 0000000 generic-all
+java/lang/ProcessBuilder/Basic.java#id0 0000000 generic-all
+java/lang/ClassLoader/loadLibraryUnload/LoadLibraryUnloadTest.java 0000000 generic-all
+java/lang/ClassLoader/loadLibraryDeadlock/TestLoadLibraryDeadlock.java 0000000 generic-all
+java/lang/ClassLoader/getResource/GetResource.java 0000000 generic-all
+java/lang/ClassLoader/GetSystemPackage.java 0000000 generic-all
+java/lang/ClassLoader/Assert.java 0000000 generic-all
+java/io/Serializable/multipleFieldWrite/MultipleFieldWrite.java 0000000 generic-all
+java/io/Console/TestConsole.java 0000000 generic-all
+com/sun/security/auth/module/PlatformLoginModule/CheckLoadLibrary.sh 0000000 generic-all
+com/sun/org/apache/xerces/internal/impl/Bug7157609Test.java 0000000 generic-all
+com/sun/jdi/connect/spi/DebugUsingCustomConnector.java 0000000 generic-all
+com/sun/jdi/cds/CDSFieldWatchpoints.java 0000000 generic-all
+com/sun/jdi/cds/CDSDeleteAllBkptsTest.java 0000000 generic-all
+com/sun/jdi/cds/CDSBreakpointTest.java 0000000 generic-all
+com/sun/jdi/SunBootClassPathEmptyTest.java 0000000 generic-all
+com/sun/jdi/JdbOptions.java 0000000 generic-all
+com/sun/jdi/JITDebug.java 0000000 generic-all
+com/sun/jdi/ClassUnloadEventTest.java 0000000 generic-all
+
+java/rmi/reliability/benchmark/bench/rmi/Main.java 0000000 generic-all
 
 
-java/lang/instrument/RedefineSubclassWithTwoInterfaces.sh
-java/lang/instrument/RedefineMethodWithAnnotations.sh
-java/lang/instrument/RedefineMethodInBacktrace.sh
-java/lang/instrument/RedefineMethodDelInvoke.sh
-java/lang/instrument/RedefineClassWithNativeMethod.sh
-java/lang/instrument/ManifestTest.sh
-java/lang/instrument/BootClassPath/BootClassPathTest.sh
-java/lang/annotation/LoaderLeakTest.java
-java/lang/Thread/UncaughtExceptionsTest.java
-java/lang/System/SecurityManagerWarnings.java
-java/lang/System/LoggerFinder/modules/UnnamedLoggerForJDKTest.java
-java/lang/System/LoggerFinder/modules/UnnamedLoggerForImageTest.java
-java/lang/System/LoggerFinder/modules/NamedLoggerForJDKTest.java
-java/lang/System/LoggerFinder/modules/NamedLoggerForImageTest.java
-java/lang/System/LoggerFinder/modules/LoggerInImageTest.java
-java/lang/System/LoggerFinder/modules/JDKLoggerForJDKTest.java
-java/lang/System/LoggerFinder/modules/JDKLoggerForImageTest.java
-java/lang/SecurityManager/modules/CustomSecurityManagerTest.java
-java/lang/RuntimeTests/exec/SetCwd.java
-java/lang/RuntimeTests/exec/ExitValue.java
-java/lang/RuntimeTests/exec/ExecWithLotsOfArgs.java
-java/lang/RuntimeTests/exec/Duped.java
-java/lang/RuntimeTests/exec/ArgWithSpaceAndFinalBackslash.java
-java/lang/RuntimeTests/RuntimeExitLogTest.java
-java/lang/ProcessHandle/TreeTest.java
-java/lang/ProcessHandle/OnExitTest.java
-java/lang/ProcessBuilder/SkipTest.java
-java/lang/ProcessBuilder/RedirectAttack.java
-java/lang/ProcessBuilder/ReaderWriterTest.java
-java/lang/ProcessBuilder/ProcessStartLoggingTest.java
-java/lang/ProcessBuilder/JspawnhelperProtocol.java
-java/lang/ProcessBuilder/InheritIOTest.java
-java/lang/ProcessBuilder/Basic.java#id1
-java/lang/ProcessBuilder/Basic.java#id0
-java/lang/ClassLoader/loadLibraryUnload/LoadLibraryUnloadTest.java
-java/lang/ClassLoader/loadLibraryDeadlock/TestLoadLibraryDeadlock.java
-java/lang/ClassLoader/getResource/GetResource.java
-java/lang/ClassLoader/GetSystemPackage.java
-java/lang/ClassLoader/Assert.java
-java/io/Serializable/multipleFieldWrite/MultipleFieldWrite.java
-java/io/Console/TestConsole.java
-com/sun/security/auth/module/PlatformLoginModule/CheckLoadLibrary.sh
-com/sun/org/apache/xerces/internal/impl/Bug7157609Test.java
-com/sun/jdi/connect/spi/DebugUsingCustomConnector.java
-com/sun/jdi/cds/CDSFieldWatchpoints.java
-com/sun/jdi/cds/CDSDeleteAllBkptsTest.java
-com/sun/jdi/cds/CDSBreakpointTest.java
-com/sun/jdi/SunBootClassPathEmptyTest.java
-com/sun/jdi/JdbOptions.java
-com/sun/jdi/JITDebug.java
-com/sun/jdi/ClassUnloadEventTest.java
-
-
-com/sun/crypto/provider/KeyProtector/IterationCount.java
-java/io/Console/CharsetTest.java
-java/io/File/DeleteOnExitNPE.java
-java/io/Serializable/class/NonSerializableTest.java
-java/net/InetAddress/ptr/Lookup.java
-java/net/ServerSocket/AcceptCauseFileDescriptorLeak.java
-java/net/ServerSocket/AcceptInheritHandle.java
-java/net/URLClassLoader/getresourceasstream/TestDriver.java
-java/net/URLClassLoader/sealing/CheckSealedTest.java
-java/net/URLConnection/6212146/TestDriver.java
-java/net/URLConnection/ContentHandlers/ContentHandlersTest.java
-java/net/httpclient/security/Driver.java
-java/net/spi/URLStreamHandlerProvider/Basic.java
-java/nio/channels/AsynchronousFileChannel/Lock.java
-java/nio/channels/FileChannel/Lock.java
-java/nio/channels/Selector/LotsOfUpdatesTest.java
-java/nio/channels/spi/SelectorProvider/inheritedChannel/InheritedChannelTest.java
-java/security/Security/ClassLoaderDeadlock/ClassLoaderDeadlock.sh
-java/security/Security/ClassLoaderDeadlock/Deadlock.sh
-java/security/Security/ConfigFileTest.java
-java/security/SignedJar/SignedJarWithCustomClassLoader.java
-java/security/cert/CertificateFactory/slowstream.sh
-java/time/nontestng/java/time/chrono/HijrahConfigTest.java
-javax/naming/spi/providers/InitialContextTest.java
-javax/net/ssl/DTLS/DTLSWontNegotiateV10.java
-javax/net/ssl/ciphersuites/TLSWontNegotiateDisabledCipherAlgos.java#Client
-javax/net/ssl/ciphersuites/TLSWontNegotiateDisabledCipherAlgos.java#Server
-javax/script/JDK_8196959/BadFactoryTest.sh
-javax/script/ProviderTest.sh
-jdk/nio/zipfs/LargeEntriesTest.java
-sun/net/www/protocol/jar/GetContentTypeTest.java
-sun/net/www/protocol/jar/jarbug/TestDriver.java
-sun/net/www/protocol/jrt/OtherResourcesTest.java
-sun/security/krb5/auto/ModuleName.java
-sun/security/krb5/runNameEquals.sh
-sun/security/pkcs11/Provider/MultipleLogins.sh
-sun/security/provider/KeyStore/DKSTest.java
-sun/security/provider/PolicyFile/getinstance/getinstance.sh
-sun/security/ssl/SSLEngineImpl/SSLEngineKeyLimit.java
-sun/security/ssl/SSLSessionImpl/ResumptionUpdateBoundValues.java
-sun/security/ssl/SSLSocketImpl/NotifyHandshakeTest.sh
-sun/security/ssl/SSLSocketImpl/SSLSocketKeyLimit.java
-sun/security/tools/jarsigner/compatibility/SignTwice.java
-sun/security/util/Pem/encoding.sh
-sun/security/validator/certreplace.sh
-sun/security/validator/samedn.sh
-tools/jar/multiRelease/RuntimeTest.java
-tools/jlink/DefaultProviderTest.java
-tools/jlink/JLink100Modules.java
-tools/jlink/JLink2Test.java
-tools/jlink/JLinkDedupTestBatchSizeOne.java
-tools/jlink/JLinkNegativeTest.java
-tools/jlink/JLinkPluginsTest.java
-tools/jlink/JLinkTest.java
-tools/jlink/NativeTest.java
-tools/jlink/basic/AllModulePath.java
-tools/jlink/basic/BasicTest.java
-tools/jlink/bindservices/BindServices.java
-tools/jlink/multireleasejar/JLinkMultiReleaseJarTest.java
-tools/jlink/plugins/AddOptionsPluginTest.java
-tools/jlink/plugins/CDSPluginTest.java
-tools/jlink/plugins/IncludeLocalesPluginTest.java
-tools/jlink/plugins/SaveJlinkArgfilesPluginTest.java
-tools/jlink/plugins/StripNativeDebugSymbolsPlugin/StripNativeDebugSymbolsPluginTest.java
-tools/jlink/plugins/SystemModuleDescriptors/CompiledVersionTest.java
-tools/jlink/plugins/SystemModuleDescriptors/UserModuleTest.java
-tools/jlink/plugins/VendorInfoPluginsTest.java
-tools/jpackage/linux/AppAboutUrlTest.java#id0
-tools/jpackage/linux/AppCategoryTest.java
-tools/jpackage/linux/LicenseTypeTest.java
-tools/jpackage/linux/LinuxBundleNameTest.java
-tools/jpackage/linux/LinuxWeirdOutputDirTest.java
-tools/jpackage/linux/PackageDepsTest.java
-tools/jpackage/linux/ReleaseTest.java#id0
-tools/jpackage/linux/ShortcutHintTest.java#id0
-tools/jpackage/linux/jdk/jpackage/tests/UsrTreeTest.java
-tools/jpackage/share/AddLShortcutTest.java
-tools/jpackage/share/AddLauncherTest.java#id1
-tools/jpackage/share/AppContentTest.java
-tools/jpackage/share/AppLauncherEnvTest.java
-tools/jpackage/share/ArgumentsTest.java
-tools/jpackage/share/EmptyFolderPackageTest.java
-tools/jpackage/share/EmptyFolderTest.java
-tools/jpackage/share/InstallDirTest.java#id0
-tools/jpackage/share/LicenseTest.java#id0
-tools/jpackage/share/MultiLauncherTwoPhaseTest.java
-tools/jpackage/share/PerUserCfgTest.java
-tools/jpackage/share/SimplePackageTest.java
-tools/jpackage/share/jdk/jpackage/tests/AppVersionTest.java
-tools/jpackage/share/jdk/jpackage/tests/BasicTest.java
-tools/jpackage/share/jdk/jpackage/tests/CookedRuntimeTest.java
-tools/jpackage/share/jdk/jpackage/tests/DotInNameTest.java
-tools/jpackage/share/jdk/jpackage/tests/JLinkOptionsTest.java
-tools/jpackage/share/jdk/jpackage/tests/JavaOptionsEqualsTest.java#id0
-tools/jpackage/share/jdk/jpackage/tests/JavaOptionsEqualsTest.java#id1
-tools/jpackage/share/jdk/jpackage/tests/JavaOptionsTest.java
-tools/jpackage/share/jdk/jpackage/tests/MainClassTest.java
-tools/jpackage/share/jdk/jpackage/tests/ModulePathTest.java
-tools/jpackage/share/jdk/jpackage/tests/ModulePathTest2.java
-tools/jpackage/share/jdk/jpackage/tests/ModulePathTest3.java
-tools/jpackage/share/jdk/jpackage/tests/MultipleJarAppTest.java
-tools/jpackage/share/jdk/jpackage/tests/NoMPathRuntimeTest.java
+com/sun/crypto/provider/KeyProtector/IterationCount.java 0000000 generic-all
+java/io/Console/CharsetTest.java 0000000 generic-all
+java/io/File/DeleteOnExitNPE.java 0000000 generic-all
+java/io/Serializable/class/NonSerializableTest.java 0000000 generic-all
+java/net/InetAddress/ptr/Lookup.java 0000000 generic-all
+java/net/ServerSocket/AcceptCauseFileDescriptorLeak.java 0000000 generic-all
+java/net/ServerSocket/AcceptInheritHandle.java 0000000 generic-all
+java/net/URLClassLoader/getresourceasstream/TestDriver.java 0000000 generic-all
+java/net/URLClassLoader/sealing/CheckSealedTest.java 0000000 generic-all
+java/net/URLConnection/6212146/TestDriver.java 0000000 generic-all
+java/net/URLConnection/ContentHandlers/ContentHandlersTest.java 0000000 generic-all
+java/net/httpclient/security/Driver.java 0000000 generic-all
+java/net/spi/URLStreamHandlerProvider/Basic.java 0000000 generic-all
+java/nio/channels/AsynchronousFileChannel/Lock.java 0000000 generic-all
+java/nio/channels/FileChannel/Lock.java 0000000 generic-all
+java/nio/channels/Selector/LotsOfUpdatesTest.java 0000000 generic-all
+java/nio/channels/spi/SelectorProvider/inheritedChannel/InheritedChannelTest.java 0000000 generic-all
+java/security/Security/ClassLoaderDeadlock/ClassLoaderDeadlock.sh 0000000 generic-all
+java/security/Security/ClassLoaderDeadlock/Deadlock.sh 0000000 generic-all
+java/security/Security/ConfigFileTest.java 0000000 generic-all
+java/security/SignedJar/SignedJarWithCustomClassLoader.java 0000000 generic-all
+java/security/cert/CertificateFactory/slowstream.sh 0000000 generic-all
+java/time/nontestng/java/time/chrono/HijrahConfigTest.java 0000000 generic-all
+javax/naming/spi/providers/InitialContextTest.java 0000000 generic-all
+javax/net/ssl/DTLS/DTLSWontNegotiateV10.java 0000000 generic-all
+javax/net/ssl/ciphersuites/TLSWontNegotiateDisabledCipherAlgos.java#Client 0000000 generic-all
+javax/net/ssl/ciphersuites/TLSWontNegotiateDisabledCipherAlgos.java#Server 0000000 generic-all
+javax/script/JDK_8196959/BadFactoryTest.sh 0000000 generic-all
+javax/script/ProviderTest.sh 0000000 generic-all
+jdk/nio/zipfs/LargeEntriesTest.java 0000000 generic-all
+sun/misc/EscapePath.java 0000000 generic-all
+sun/net/www/protocol/jar/GetContentTypeTest.java 0000000 generic-all
+sun/net/www/protocol/jar/jarbug/TestDriver.java 0000000 generic-all
+sun/net/www/protocol/jrt/OtherResourcesTest.java 0000000 generic-all
+sun/security/krb5/auto/ModuleName.java 0000000 generic-all
+sun/security/krb5/runNameEquals.sh 0000000 generic-all
+sun/security/pkcs11/Provider/MultipleLogins.sh 0000000 generic-all
+sun/security/provider/KeyStore/DKSTest.java 0000000 generic-all
+sun/security/provider/PolicyFile/getinstance/getinstance.sh 0000000 generic-all
+sun/security/ssl/SSLEngineImpl/SSLEngineKeyLimit.java 0000000 generic-all
+sun/security/ssl/SSLSessionImpl/ResumptionUpdateBoundValues.java 0000000 generic-all
+sun/security/ssl/SSLSocketImpl/NotifyHandshakeTest.sh 0000000 generic-all
+sun/security/ssl/SSLSocketImpl/SSLSocketKeyLimit.java 0000000 generic-all
+sun/security/tools/jarsigner/compatibility/SignTwice.java 0000000 generic-all
+sun/security/util/Pem/encoding.sh 0000000 generic-all
+sun/security/validator/certreplace.sh 0000000 generic-all
+sun/security/validator/samedn.sh 0000000 generic-all
+tools/jar/multiRelease/RuntimeTest.java 0000000 generic-all
+tools/jlink/DefaultProviderTest.java 0000000 generic-all
+tools/jlink/JLink100Modules.java 0000000 generic-all
+tools/jlink/JLink2Test.java 0000000 generic-all
+tools/jlink/JLinkDedupTestBatchSizeOne.java 0000000 generic-all
+tools/jlink/JLinkNegativeTest.java 0000000 generic-all
+tools/jlink/JLinkPluginsTest.java 0000000 generic-all
+tools/jlink/JLinkTest.java 0000000 generic-all
+tools/jlink/NativeTest.java 0000000 generic-all
+tools/jlink/basic/AllModulePath.java 0000000 generic-all
+tools/jlink/basic/BasicTest.java 0000000 generic-all
+tools/jlink/bindservices/BindServices.java 0000000 generic-all
+tools/jlink/multireleasejar/JLinkMultiReleaseJarTest.java 0000000 generic-all
+tools/jlink/plugins/AddOptionsPluginTest.java 0000000 generic-all
+tools/jlink/plugins/CDSPluginTest.java 0000000 generic-all
+tools/jlink/plugins/IncludeLocalesPluginTest.java 0000000 generic-all
+tools/jlink/plugins/SaveJlinkArgfilesPluginTest.java 0000000 generic-all
+tools/jlink/plugins/StripNativeDebugSymbolsPlugin/StripNativeDebugSymbolsPluginTest.java 0000000 generic-all
+tools/jlink/plugins/SystemModuleDescriptors/CompiledVersionTest.java 0000000 generic-all
+tools/jlink/plugins/SystemModuleDescriptors/UserModuleTest.java 0000000 generic-all
+tools/jlink/plugins/VendorInfoPluginsTest.java 0000000 generic-all
+tools/jpackage/linux/AppAboutUrlTest.java#id0 0000000 generic-all
+tools/jpackage/linux/AppCategoryTest.java 0000000 generic-all
+tools/jpackage/linux/LicenseTypeTest.java 0000000 generic-all
+tools/jpackage/linux/LinuxBundleNameTest.java 0000000 generic-all
+tools/jpackage/linux/LinuxWeirdOutputDirTest.java 0000000 generic-all
+tools/jpackage/linux/PackageDepsTest.java 0000000 generic-all
+tools/jpackage/linux/ReleaseTest.java#id0 0000000 generic-all
+tools/jpackage/linux/ShortcutHintTest.java#id0 0000000 generic-all
+tools/jpackage/linux/jdk/jpackage/tests/UsrTreeTest.java 0000000 generic-all
+tools/jpackage/share/AddLShortcutTest.java 0000000 generic-all
+tools/jpackage/share/AddLauncherTest.java#id1 0000000 generic-all
+tools/jpackage/share/AppContentTest.java 0000000 generic-all
+tools/jpackage/share/AppLauncherEnvTest.java 0000000 generic-all
+tools/jpackage/share/ArgumentsTest.java 0000000 generic-all
+tools/jpackage/share/EmptyFolderPackageTest.java 0000000 generic-all
+tools/jpackage/share/EmptyFolderTest.java 0000000 generic-all
+tools/jpackage/share/InstallDirTest.java#id0 0000000 generic-all
+tools/jpackage/share/LicenseTest.java#id0 0000000 generic-all
+tools/jpackage/share/MultiLauncherTwoPhaseTest.java 0000000 generic-all
+tools/jpackage/share/PerUserCfgTest.java 0000000 generic-all
+tools/jpackage/share/SimplePackageTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/AppVersionTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/BasicTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/CookedRuntimeTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/DotInNameTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/JLinkOptionsTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/JavaOptionsEqualsTest.java#id0 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/JavaOptionsEqualsTest.java#id1 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/JavaOptionsTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/MainClassTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/ModulePathTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/ModulePathTest2.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/ModulePathTest3.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/MultipleJarAppTest.java 0000000 generic-all
+tools/jpackage/share/jdk/jpackage/tests/NoMPathRuntimeTest.java 0000000 generic-all
 tools/jpackage/share/jdk/jpackage/tests/VendorTest.java#id1
-tools/launcher/8261785/Test8261785.java
-tools/launcher/ArgFileSyntax.java
-tools/launcher/ArgsEnvVar.java
-tools/launcher/ArgsFileTest.java
-tools/launcher/Arrrghs.java
-tools/launcher/BigJar.java
-tools/launcher/ClassPathWildCard.sh
-tools/launcher/ExecutionEnvironment.java#id0
-tools/launcher/FXLauncherTest.java
-tools/launcher/HelpFlagsTest.java
-tools/launcher/Jexec.java
-tools/launcher/JliLaunchTest.java
-tools/launcher/MainClassAttributeTest.java
-tools/launcher/MainClassCantBeLoadedTest.java
-tools/launcher/MiscTests.java
-tools/launcher/MultipleJRE.sh
-tools/launcher/MultipleJRERemoved.java
-tools/launcher/Settings.java
-tools/launcher/SourceMode.java
+tools/launcher/8261785/Test8261785.java 0000000 generic-all
+tools/launcher/ArgFileSyntax.java 0000000 generic-all
+tools/launcher/ArgsEnvVar.java 0000000 generic-all
+tools/launcher/ArgsFileTest.java 0000000 generic-all
+tools/launcher/Arrrghs.java 0000000 generic-all
+tools/launcher/BigJar.java 0000000 generic-all
+tools/launcher/ClassPathWildCard.sh 0000000 generic-all
+tools/launcher/ExecutionEnvironment.java#id0 0000000 generic-all
+tools/launcher/FXLauncherTest.java 0000000 generic-all
+tools/launcher/HelpFlagsTest.java 0000000 generic-all
+tools/launcher/Jexec.java 0000000 generic-all
+tools/launcher/JliLaunchTest.java 0000000 generic-all
+tools/launcher/MainClassAttributeTest.java 0000000 generic-all
+tools/launcher/MainClassCantBeLoadedTest.java 0000000 generic-all
+tools/launcher/MiscTests.java 0000000 generic-all
+tools/launcher/MultipleJRE.sh 0000000 generic-all
+tools/launcher/MultipleJRERemoved.java 0000000 generic-all
+tools/launcher/Settings.java 0000000 generic-all
+tools/launcher/SourceMode.java 0000000 generic-all
 tools/launcher/Test7029048.java#id0
-tools/launcher/TestMainWithoutEnclosing.java
+tools/launcher/TestMainWithoutEnclosing.java 0000000 generic-all
 tools/launcher/TestXcheckJNIWarnings.java#jdwp-agent
 tools/launcher/TestXcheckJNIWarnings.java#noagent
-tools/launcher/TooSmallStackSize.java
-tools/launcher/ToolsOpts.java
-tools/launcher/UnicodeTest.java
-tools/launcher/UnresolvedExceptions.java
-tools/launcher/VersionCheck.java
-tools/launcher/modules/classpath/JavaClassPathTest.java
-tools/launcher/modules/patch/systemmodules/PatchSystemModules.java
+tools/launcher/TooSmallStackSize.java 0000000 generic-all
+tools/launcher/ToolsOpts.java 0000000 generic-all
+tools/launcher/UnicodeTest.java 0000000 generic-all
+tools/launcher/UnresolvedExceptions.java 0000000 generic-all
+tools/launcher/VersionCheck.java 0000000 generic-all
+tools/launcher/modules/classpath/JavaClassPathTest.java 0000000 generic-all
+tools/launcher/modules/patch/systemmodules/PatchSystemModules.java 0000000 generic-all
