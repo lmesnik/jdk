@@ -2973,6 +2973,10 @@ bool static should_fail(const char* java_command, const char* line) {
   if (starts_with(java_command, "com.sun.javatest.regtest.agent.GetSystemProperty")) {
     return false;
   }
+  if (starts_with(java_command, "com.sun.javatest.regtest.agent.GetJDKProperties")) {
+    return false;
+  }
+
   // Skip driver & jtreg agents, it is the check for processed forked by test
   if (starts_with(java_command, "com.sun.javatest.regtest.agent.AgentServer")) {
     return false;
