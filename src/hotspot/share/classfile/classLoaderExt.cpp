@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2023, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -60,7 +60,7 @@ bool ClassLoaderExt::_has_platform_classes = false;
 bool ClassLoaderExt::_has_non_jar_in_classpath = false;
 
 void ClassLoaderExt::append_boot_classpath(ClassPathEntry* new_entry) {
-  if (UseSharedSpaces) {
+  if (CDSConfig::is_using_archive()) {
     warning("Sharing is only supported for boot loader classes because bootstrap classpath has been appended");
     FileMapInfo::current_info()->set_has_platform_or_app_classes(false);
     if (DynamicArchive::is_mapped()) {
@@ -276,11 +276,11 @@ void ClassLoaderExt::record_result(const s2 classpath_index, InstanceKlass* resu
   result->set_shared_classpath_index(classpath_index);
   result->set_shared_class_loader_type(classloader_type);
 #if INCLUDE_CDS_JAVA_HEAP
-  if (DumpSharedSpaces && AllowArchivingWithJavaAgent && classloader_type == ClassLoader::BOOT_LOADER &&
-      classpath_index < 0 && HeapShared::can_write() && redefined) {
-    // During static dump, classes for the built-in loaders are always loaded from
-    // known locations (jimage, classpath or modulepath), so classpath_index should
-    // always be >= 0.
+  if (CDSConfig::is_dumping_heap() && AllowArchivingWithJavaAgent && classloader_type == ClassLoader::BOOT_LOADER &&
+      classpath_index < 0 && redefined) {
+    // When dumping the heap (which happens only during static dump), classes for the built-in
+    // loaders are always loaded from known locations (jimage, classpath or modulepath),
+    // so classpath_index should always be >= 0.
     // The only exception is when a java agent is used during dump time (for testing
     // purposes only). If a class is transformed by the agent, the CodeSource of
     // this class may point to an unknown location. This may break heap object archiving,
