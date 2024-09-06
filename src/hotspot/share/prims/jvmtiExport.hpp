@@ -287,10 +287,16 @@ class JvmtiExport : public AllStatic {
   }
 
   // field access management
-  static address  get_field_access_count_addr() NOT_JVMTI_RETURN_(nullptr);
+  static address get_field_access_count_addr() NOT_JVMTI_RETURN_(nullptr);
+  static int get_field_access_count() NOT_JVMTI_RETURN_(nullptr);
+  static void set_field_access_count(int value) NOT_JVMTI_RETURN;
 
   // field modification management
-  static address  get_field_modification_count_addr() NOT_JVMTI_RETURN_(nullptr);
+  static address get_field_modification_count_addr() NOT_JVMTI_RETURN_(nullptr);
+  static int get_field_modification_count() NOT_JVMTI_RETURN_(0);
+  static void set_field_modification_count(int value) NOT_JVMTI_RETURN;
+
+
 
   // -----------------
 

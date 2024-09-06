@@ -232,7 +232,8 @@ public:
   static void set_frame_pop(JvmtiEnvThreadState *env_thread, JvmtiFramePop fpop);
   static void clear_frame_pop(JvmtiEnvThreadState *env_thread, JvmtiFramePop fpop);
 
-  static void change_field_watch(jvmtiEvent event_type, bool added);
+  static void change_field_modification_watch(bool added);
+  static void change_field_access_watch(bool added);
 
   static void recompute_thread_filtered(JvmtiThreadState *state);
   static void thread_started(JavaThread *thread);

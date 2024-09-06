@@ -2539,7 +2539,7 @@ JvmtiEnv::SetFieldAccessWatch(fieldDescriptor* fdesc_ptr) {
   if (fdesc_ptr->is_field_access_watched()) return JVMTI_ERROR_DUPLICATE;
   fdesc_ptr->set_is_field_access_watched(true);
 
-  JvmtiEventController::change_field_watch(JVMTI_EVENT_FIELD_ACCESS, true);
+  JvmtiEventController::change_field_access_watch(true);
 
   return JVMTI_ERROR_NONE;
 } /* end SetFieldAccessWatch */
@@ -2552,7 +2552,7 @@ JvmtiEnv::ClearFieldAccessWatch(fieldDescriptor* fdesc_ptr) {
   if (!fdesc_ptr->is_field_access_watched()) return JVMTI_ERROR_NOT_FOUND;
   fdesc_ptr->set_is_field_access_watched(false);
 
-  JvmtiEventController::change_field_watch(JVMTI_EVENT_FIELD_ACCESS, false);
+  JvmtiEventController::change_field_access_watch(false);
 
   return JVMTI_ERROR_NONE;
 } /* end ClearFieldAccessWatch */
@@ -2565,7 +2565,7 @@ JvmtiEnv::SetFieldModificationWatch(fieldDescriptor* fdesc_ptr) {
   if (fdesc_ptr->is_field_modification_watched()) return JVMTI_ERROR_DUPLICATE;
   fdesc_ptr->set_is_field_modification_watched(true);
 
-  JvmtiEventController::change_field_watch(JVMTI_EVENT_FIELD_MODIFICATION, true);
+  JvmtiEventController::change_field_modification_watch(true);
 
   return JVMTI_ERROR_NONE;
 } /* end SetFieldModificationWatch */
@@ -2578,7 +2578,7 @@ JvmtiEnv::ClearFieldModificationWatch(fieldDescriptor* fdesc_ptr) {
   if (!fdesc_ptr->is_field_modification_watched()) return JVMTI_ERROR_NOT_FOUND;
   fdesc_ptr->set_is_field_modification_watched(false);
 
-  JvmtiEventController::change_field_watch(JVMTI_EVENT_FIELD_MODIFICATION, false);
+  JvmtiEventController::change_field_modification_watch(false);
 
   return JVMTI_ERROR_NONE;
 } /* end ClearFieldModificationWatch */

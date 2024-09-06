@@ -313,7 +313,8 @@ public:
   static void set_frame_pop(JvmtiEnvThreadState *env_thread, JvmtiFramePop fpop);
   static void clear_frame_pop(JvmtiEnvThreadState *env_thread, JvmtiFramePop fpop);
   static void clear_to_frame_pop(JvmtiEnvThreadState *env_thread, JvmtiFramePop fpop);
-  static void change_field_watch(jvmtiEvent event_type, bool added);
+  static void change_field_access_watch(bool added);
+  static void change_field_modification_watch(bool added);
 
   static bool is_any_thread_filtered_event_enabled_globally();
   static void recompute_thread_filtered(JvmtiThreadState *state);
@@ -522,10 +523,10 @@ JvmtiEventControllerPrivate::recompute_env_thread_enabled(JvmtiEnvThreadState* e
   if (!ets->has_frame_pops()) {
     now_enabled &= ~FRAME_POP_BIT;
   }
-  if (*((int *)JvmtiExport::get_field_access_count_addr()) == 0) {
+  if (JvmtiExport::get_field_access_count() == 0) {
     now_enabled &= ~FIELD_ACCESS_BIT;
   }
-  if (*((int *)JvmtiExport::get_field_modification_count_addr()) == 0) {
+  if (JvmtiExport::get_field_modification_count() == 0) {
     now_enabled &= ~FIELD_MODIFICATION_BIT;
   }
 
@@ -961,41 +962,52 @@ JvmtiEventControllerPrivate::clear_to_frame_pop(JvmtiEnvThreadState *ets, JvmtiF
   }
 }
 
-void
-JvmtiEventControllerPrivate::change_field_watch(jvmtiEvent event_type, bool added) {
-  int *count_addr;
 
-  switch (event_type) {
-  case JVMTI_EVENT_FIELD_MODIFICATION:
-    count_addr = (int *)JvmtiExport::get_field_modification_count_addr();
-    break;
-  case JVMTI_EVENT_FIELD_ACCESS:
-    count_addr = (int *)JvmtiExport::get_field_access_count_addr();
-    break;
-  default:
-    assert(false, "incorrect event");
-    return;
-  }
+void
+JvmtiEventControllerPrivate::change_field_modification_watch(bool added) {
+  static int _field_modification_count = 0;
 
   EC_TRACE(("[-] # change field watch - %s %s count=%d",
-            event_type==JVMTI_EVENT_FIELD_MODIFICATION? "modification" : "access",
+            "modification",
             added? "add" : "remove",
-            *count_addr));
+            _field_modification_count));
 
   if (added) {
-    (*count_addr)++;
-    if (*count_addr == 1) {
-      recompute_enabled();
-    }
+	_field_modification_count++;
+	if (_field_modification_count == 1) {
+	  JvmtiExport::set_field_modification_count(1);
+	  recompute_enabled();
+	}
   } else {
-    if (*count_addr > 0) {
-      (*count_addr)--;
-      if (*count_addr == 0) {
-        recompute_enabled();
-      }
-    } else {
-      assert(false, "field watch out of phase");
-    }
+	_field_modification_count--;
+	if (_field_modification_count == 0) {
+	  JvmtiExport::set_field_modification_count(0);
+	  recompute_enabled();
+	}
+  }
+}
+
+void
+JvmtiEventControllerPrivate::change_field_access_watch(bool added) {
+  static int _field_access_count = 0;
+
+  EC_TRACE(("[-] # change field watch - %s %s count=%d",
+	 "access",
+	  added? "add" : "remove",
+	  _field_access_count));
+
+  if (added) {
+	_field_access_count++;
+	if (_field_access_count == 1) {
+	  JvmtiExport::set_field_access_count(1);
+	  recompute_enabled();
+	}
+  } else {
+	_field_access_count--;
+	if (_field_access_count == 0) {
+	  JvmtiExport::set_field_access_count(0);
+	  recompute_enabled();
+	}
   }
 }
 
@@ -1126,9 +1138,15 @@ JvmtiEventController::clear_frame_pop(JvmtiEnvThreadState *ets, JvmtiFramePop fp
 }
 
 void
-JvmtiEventController::change_field_watch(jvmtiEvent event_type, bool added) {
+JvmtiEventController::change_field_modification_watch(bool added) {
   MutexLocker mu(JvmtiThreadState_lock);
-  JvmtiEventControllerPrivate::change_field_watch(event_type, added);
+  JvmtiEventControllerPrivate::change_field_modification_watch(added);
+}
+
+void
+JvmtiEventController::change_field_access_watch(bool added) {
+  MutexLocker mu(JvmtiThreadState_lock);
+  JvmtiEventControllerPrivate::change_field_access_watch(added);
 }
 
 void

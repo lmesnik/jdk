@@ -314,6 +314,15 @@ address JvmtiExport::get_field_access_count_addr() {
   return (address)(&_field_access_count);
 }
 
+
+int JvmtiExport::get_field_access_count() {
+  return _field_access_count;
+}
+
+void JvmtiExport::set_field_access_count(int value) {
+  _field_access_count = value;
+}
+
 //
 // field modification management
 //
@@ -329,6 +338,14 @@ address JvmtiExport::get_field_modification_count_addr() {
   // down the VM when we aren't watching field modifications.
   // Other access/mutation safe by virtue of being in VM state.
   return (address)(&_field_modification_count);
+}
+
+int JvmtiExport::get_field_modification_count() {
+  return _field_modification_count;
+}
+
+void JvmtiExport::set_field_modification_count(int value) {
+  _field_modification_count = value;
 }
 
 
@@ -2164,7 +2181,7 @@ void JvmtiExport::notice_unwind_due_to_exception(JavaThread *thread, Method* met
 
 oop JvmtiExport::jni_GetField_probe(JavaThread *thread, jobject jobj, oop obj,
                                     Klass* klass, jfieldID fieldID, bool is_static) {
-  if (*((int *)get_field_access_count_addr()) > 0 && thread->has_last_Java_frame()) {
+  if (get_field_access_count() > 0 && thread->has_last_Java_frame()) {
     // At least one field access watch is set so we have more work to do.
     post_field_access_by_jni(thread, obj, klass, fieldID, is_static);
     // event posting can block so refetch oop if we were passed a jobj
@@ -2249,7 +2266,7 @@ void JvmtiExport::post_field_access(JavaThread *thread, Method* method,
 oop JvmtiExport::jni_SetField_probe(JavaThread *thread, jobject jobj, oop obj,
                                     Klass* klass, jfieldID fieldID, bool is_static,
                                     char sig_type, jvalue *value) {
-  if (*((int *)get_field_modification_count_addr()) > 0 && thread->has_last_Java_frame()) {
+  if (get_field_modification_count() > 0 && thread->has_last_Java_frame()) {
     // At least one field modification watch is set so we have more work to do.
     post_field_modification_by_jni(thread, obj, klass, fieldID, is_static, sig_type, value);
     // event posting can block so refetch oop if we were passed a jobj
