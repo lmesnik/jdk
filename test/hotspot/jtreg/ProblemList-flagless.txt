@@ -23,6 +23,10 @@ compiler/debug/VerifyAdapterSharing.java 0000000 generic-all
 compiler/jvmci/compilerToVM/GetFlagValueTest.java 0000000 generic-all
 compiler/rangechecks/TestRangeCheckHoistingScaledIV.java 0000000 generic-all
 compiler/sharedstubs/SharedStubToInterpTest.java 0000000 generic-all
+compiler/c2/TestReduceAllocationAndHeapDump.java 8339889 generic-all
+compiler/calls/NativeCalls.java 8339889 generic-all
+compiler/debug/TestStress.java 8339889 generic-all
+compiler/inlining/TestDuplicatedLateInliningOutput.java 8339889 generic-all
 gc/TestAgeOutput.java#id0
 gc/TestAgeOutput.java#id1
 gc/TestCardTablePageCommits.java 0000000 generic-all
@@ -184,6 +188,7 @@ runtime/posixSig/TestPosixSig.java 0000000 generic-all
 
 ## Start debugger
 serviceability/sa/UniqueVtableTest.java 0000000 generic-all
+serviceability/sa/TestDebugInfoDecode.java 0000000 generic-all
 serviceability/sa/TestObjectMonitorIterate.java 0000000 generic-all
 serviceability/sa/TestObjectAlignment.java 0000000 generic-all
 serviceability/sa/TestInstanceKlassSizeForInterface.java 0000000 generic-all
