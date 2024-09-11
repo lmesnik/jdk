@@ -123,6 +123,7 @@ java/lang/ClassLoader/Assert.java 8319672 generic-all
 jdk/internal/loader/URLClassPath/LargeClasspathWithPkgPrefix.java 8319672 generic-all
 
 java/io/Console/CharsetTest.java 8319652 generic-all
+java/io/Console/RestoreEchoTest.java 8319652 generic-all
 java/io/File/DeleteOnExitNPE.java 8319652 generic-all
 java/io/Serializable/class/NonSerializableTest.java 8319652 generic-all
 
@@ -132,8 +133,16 @@ java/nio/channels/Selector/LotsOfUpdatesTest.java 8319652 generic-all
 java/nio/channels/spi/SelectorProvider/inheritedChannel/InheritedChannelTest.java 8319652 generic-all
 jdk/nio/zipfs/LargeEntriesTest.java 8319652 generic-all
 
-#java/security/Security/ClassLoaderDeadlock/ClassLoaderDeadlock.sh 0000000 generic-all
-#java/security/Security/ClassLoaderDeadlock/Deadlock.sh 0000000 generic-all
+java/security/Security/ClassLoaderDeadlock/ClassLoaderDeadlock.sh 8339892 generic-all
+java/security/Security/ClassLoaderDeadlock/Deadlock.sh 8339892 generic-all
+java/security/cert/CertificateFactory/slowstream.sh 8339892 generic-all
+sun/security/krb5/runNameEquals.sh 8339892 generic-all
+sun/security/pkcs11/Provider/MultipleLogins.sh 8339892 generic-all
+sun/security/provider/PolicyFile/getinstance/getinstance.sh 8339892 generic-all
+sun/security/ssl/SSLSocketImpl/NotifyHandshakeTest.sh 8339892 generic-all
+sun/security/util/Pem/encoding.sh 8339892 generic-all
+sun/security/validator/certreplace.sh 8339892 generic-all
+sun/security/validator/samedn.sh 8339892 generic-all
 
 java/security/Security/ConfigFileTest.java 8319673 generic-all
 java/security/SignedJar/SignedJarWithCustomClassLoader.java 8319673 generic-all
@@ -144,6 +153,14 @@ com/sun/crypto/provider/KeyProtector/IterationCount.java 8319673 generic-all
 sun/security/tools/jarsigner/compatibility/SignTwice.java 8319673 generic-all
 sun/security/krb5/auto/ModuleName.java 8319673 generic-all
 sun/security/provider/KeyStore/DKSTest.java 8319673 generic-all
+
+sun/security/ssl/SSLEngineImpl/SSLEngineKeyLimit.java 8339891 generic-all
+sun/security/ssl/SSLSessionImpl/MultiNSTClient.java 8339891 generic-all
+sun/security/ssl/SSLSessionImpl/MultiNSTNoSessionCreation.java 8339891 generic-all
+sun/security/ssl/SSLSessionImpl/MultiNSTParallel.java 8339891 generic-all
+sun/security/ssl/SSLSessionImpl/MultiNSTSequence.java 8339891 generic-all
+sun/security/ssl/SSLSessionImpl/ResumptionUpdateBoundValues.java 8339891 generic-all
+sun/security/ssl/SSLSocketImpl/SSLSocketKeyLimit.java 8339891 generic-all
 
 java/net/InetAddress/ptr/Lookup.java 8319651 generic-all
 java/net/ServerSocket/AcceptCauseFileDescriptorLeak.java 8319651 generic-all
@@ -178,6 +195,8 @@ java/lang/annotation/LoaderLeakTest.java 8319678 generic-all
 java/lang/Thread/UncaughtExceptionsTest.java 8319678 generic-all
 
 jdk/internal/misc/VM/RuntimeArguments.java 8319677 generic-all
+
+javax/script/ProviderTest.sh 8339890 generic-all
 
 ### not a vm flags
 sun/security/pkcs11/Cipher/PBECipher.java
@@ -274,3 +293,7 @@ tools/launcher/UnresolvedExceptions.java 8319575 generic-all
 tools/launcher/VersionCheck.java 8319575 generic-all
 tools/launcher/modules/classpath/JavaClassPathTest.java 8319575 generic-all
 tools/launcher/modules/patch/systemmodules/PatchSystemModules.java 8319575 generic-all
+tools/jlink/plugins/SystemModuleDescriptors/ModuleMainClassTest.java 8319575 generic-all
+tools/jpackage/linux/ServiceAndDesktopTest.java 8319575 generic-all
+tools/launcher/InstanceMainTest.java 8319575 generic-all
+tools/launcher/LauncherExceptionTest.java 8319575 generic-all
