@@ -99,6 +99,7 @@ gc/g1/TestShrinkDefragmentedHeap.java 8314841 generic-all
 gc/g1/TestSkipRebuildRemsetPhase.java 8314841 generic-all
 gc/g1/TestVerifyGCType.java 8314841 generic-all
 gc/g1/mixedgc/TestLogging.java 8314841 8314841
+gc/g1/mixedgc/TestLogging.java 8314841 
 gc/g1/pinnedobjs/TestPinnedOldObjectsEvacuation.java 8314841 generic-all
 gc/g1/pinnedobjs/TestPinnedObjectTypes.java 8314841 generic-all
 gc/g1/pinnedobjs/TestPinnedObjectsEvacuation.java 8314841 generic-all
@@ -116,6 +117,7 @@ gc/x/TestAllocateHeapAt.java 8314842 generic-all
 gc/x/TestPageCacheFlush.java 8314842 generic-all
 gc/x/TestSmallHeap.java 8314842 generic-all
 gc/x/TestDeprecated.java 8314842 generic-all
+gc/z/TestDefault.java 8314842 generic-all
 gc/z/TestAllocateHeapAt.java 8314842 generic-all
 gc/z/TestPageCacheFlush.java 8314842 generic-all
 gc/z/TestSmallHeap.java 8314842 generic-all
