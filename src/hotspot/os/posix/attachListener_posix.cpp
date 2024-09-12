@@ -435,7 +435,7 @@ int PosixAttachListener::write_fully(int s, char* buf, size_t len) {
 
 void PosixAttachOperation::complete(jint result, bufferedStream* st) {
   JavaThread* thread = JavaThread::current();
-  ThreadBlockInVM tbivm(thread);
+  ThreadBlockInVMNoSafepoint tbivm(thread);
 
   // write operation result
   char msg[32];
@@ -459,7 +459,12 @@ void PosixAttachOperation::complete(jint result, bufferedStream* st) {
 
 AttachOperation* AttachListener::dequeue() {
   JavaThread* thread = JavaThread::current();
-  ThreadBlockInVM tbivm(thread);
+  /*
+   * The ThreadBlockInVMNoSafepoint might be controlled by attach operation
+   * when deadlock is expected
+   * Add "unsafe" mode where it is possible to inspect process.
+   */
+  ThreadBlockInVMNoSafepoint tbivm(thread);
 
   AttachOperation* op = PosixAttachListener::dequeue();
 
@@ -491,7 +496,7 @@ void AttachListener::vm_start() {
 
 int AttachListener::pd_init() {
   JavaThread* thread = JavaThread::current();
-  ThreadBlockInVM tbivm(thread);
+  ThreadBlockInVMNoSafepoint tbivm(thread);
 
   int ret_code = PosixAttachListener::init();
 
@@ -511,7 +516,7 @@ bool AttachListener::check_socket_file() {
     // wait to terminate current attach listener instance...
     {
       // avoid deadlock if AttachListener thread is blocked at safepoint
-      ThreadBlockInVM tbivm(JavaThread::current());
+      ThreadBlockInVMNoSafepoint tbivm(JavaThread::current());
       while (AttachListener::transit_state(AL_INITIALIZING,
                                            AL_NOT_INITIALIZED) != AL_NOT_INITIALIZED) {
         os::naked_yield();

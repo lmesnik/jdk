@@ -196,6 +196,24 @@ public:
 #endif // INCLUDE_JVMTI
 #endif // INCLUDE_SERVICES
 
+class LocksDumpDCmd : public DCmd {
+public:
+  LocksDumpDCmd(outputStream* output, bool heap) : DCmd(output, heap) { }
+  static const char* name() { return "Locks.dump"; }
+  static const char* description() {
+	return "Print locks information.";
+  }
+  static const char* impact() {
+	return "High";
+  }
+  static const JavaPermission permission() {
+	JavaPermission p = {"java.lang.management.ManagementPermission",
+						"monitor", nullptr};
+	return p;
+  }
+  virtual void execute(DCmdSource source, TRAPS);
+};
+
 class VMDynamicLibrariesDCmd : public DCmd {
 public:
   VMDynamicLibrariesDCmd(outputStream* output, bool heap);

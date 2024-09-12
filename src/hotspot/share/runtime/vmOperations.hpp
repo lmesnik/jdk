@@ -60,6 +60,26 @@ class VM_ForceSafepoint: public VM_EmptyOperation {
   VMOp_Type type() const { return VMOp_ForceSafepoint; }
 };
 
+class VM_ForceSafepointStuck: public VM_Operation {
+public:
+  VMOp_Type type() const { return VMOp_ForceSafepoint; }
+  void doit() {
+	tty->print_cr("In VM_ForceSafepointStuck");
+	outputStream* out = tty;
+	out->print("VM state: ");
+	if (SafepointSynchronize::is_synchronizing()) out->print("synchronizing");
+	else if (SafepointSynchronize::is_at_safepoint()) out->print("at safepoint");
+	else out->print("not at safepoint");
+	out->print_cr("\n");
+	print_owned_locks_on_error(out);
+	while(true) {}
+  }
+  bool skip_thread_oop_barriers() const {
+	return true;
+  }
+};
+
+
 // empty vm op, when forcing a safepoint due to inline cache buffers being full
 class VM_ICBufferFull: public VM_EmptyOperation {
  public:

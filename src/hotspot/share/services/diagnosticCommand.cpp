@@ -168,6 +168,8 @@ void DCmd::register_dcmds(){
 #endif // INCLUDE_CDS
 
   DCmdFactory::register_DCmdFactory(new DCmdFactoryImpl<NMTDCmd>(full_export, true, false));
+
+  DCmdFactory::register_DCmdFactory(new DCmdFactoryImpl<LocksDumpDCmd>(full_export, true, false));
 }
 
 HelpDCmd::HelpDCmd(outputStream* output, bool heap) : DCmdWithParser(output, heap),
@@ -337,6 +339,17 @@ void JVMTIAgentLoadDCmd::execute(DCmdSource source, TRAPS) {
 
 #endif // INCLUDE_JVMTI
 #endif // INCLUDE_SERVICES
+
+void LocksDumpDCmd::execute(DCmdSource source, TRAPS) {
+  outputStream* out = output();
+  out->print("VM state: ");
+  if (SafepointSynchronize::is_synchronizing()) out->print("synchronizing");
+  else if (SafepointSynchronize::is_at_safepoint()) out->print("at safepoint");
+  else out->print("not at safepoint");
+  out->print_cr("\n");
+  print_owned_locks_on_error(out);
+}
+
 
 void PrintSystemPropertiesDCmd::execute(DCmdSource source, TRAPS) {
   // load VMSupport
