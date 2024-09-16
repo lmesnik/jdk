@@ -23,6 +23,10 @@ compiler/debug/VerifyAdapterSharing.java 0000000 generic-all
 compiler/jvmci/compilerToVM/GetFlagValueTest.java 0000000 generic-all
 compiler/rangechecks/TestRangeCheckHoistingScaledIV.java 0000000 generic-all
 compiler/sharedstubs/SharedStubToInterpTest.java 0000000 generic-all
+compiler/c2/TestReduceAllocationAndHeapDump.java 8339889 generic-all
+compiler/calls/NativeCalls.java 8339889 generic-all
+compiler/debug/TestStress.java 8339889 generic-all
+compiler/inlining/TestDuplicatedLateInliningOutput.java 8339889 generic-all
 gc/TestAgeOutput.java#id0
 gc/TestAgeOutput.java#id1
 gc/TestCardTablePageCommits.java 0000000 generic-all
@@ -63,38 +67,43 @@ gc/epsilon/TestDieWithHeapDump.java 0000000 generic-all
 gc/epsilon/TestDieWithOnError.java 0000000 generic-all
 gc/ergonomics/TestDynamicNumberOfGCThreads.java 0000000 generic-all
 gc/ergonomics/TestInitialGCThreadLogging.java 0000000 generic-all
-gc/g1/Test2GbHeap.java 0000000 generic-all
-gc/g1/TestEagerReclaimHumongousRegions.java 0000000 generic-all
-gc/g1/TestEagerReclaimHumongousRegionsClearMarkBits.java 0000000 generic-all
-gc/g1/TestEagerReclaimHumongousRegionsLog.java 0000000 generic-all
-gc/g1/TestEagerReclaimHumongousRegionsWithRefs.java 0000000 generic-all
-gc/g1/TestEvacuationFailure.java 0000000 generic-all
-gc/g1/TestG1SkipCompaction.java 0000000 generic-all
-gc/g1/TestG1TraceEagerReclaimHumongousObjects.java 0000000 generic-all
-gc/g1/TestGCLogMessages.java 0000000 generic-all
-gc/g1/TestHumongousAllocConcurrentStart.java 0000000 generic-all
-gc/g1/TestHumongousAllocNearlyFullRegion.java 0000000 generic-all
-gc/g1/TestHumongousCodeCacheRoots.java 0000000 generic-all
-gc/g1/TestHumongousConcurrentStartUndo.java 0000000 generic-all
-gc/g1/TestLargePageUseForAuxMemory.java 0000000 generic-all
-gc/g1/TestLargePageUseForHeap.java 0000000 generic-all
-gc/g1/TestMarkStackSizes.java 0000000 generic-all
+gc/g1/Test2GbHeap.java 8314841 generic-all
+gc/g1/TestEagerReclaimHumongousRegions.java 8314841 generic-all
+gc/g1/TestEagerReclaimHumongousRegionsClearMarkBits.java 8314841 generic-all
+gc/g1/TestEagerReclaimHumongousRegionsLog.java 8314841 generic-all
+gc/g1/TestEagerReclaimHumongousRegionsWithRefs.java 8314841 generic-all
+gc/g1/TestEvacuationFailure.java 8314841 generic-all
+gc/g1/TestG1SkipCompaction.java 8314841 generic-all
+gc/g1/TestG1TraceEagerReclaimHumongousObjects.java 8314841 generic-all
+gc/g1/TestGCLogMessages.java 8314841 generic-all
+gc/g1/TestHumongousAllocConcurrentStart.java 8314841 generic-all
+gc/g1/TestHumongousAllocNearlyFullRegion.java 8314841 generic-all
+gc/g1/TestHumongousCodeCacheRoots.java 8314841 generic-all
+gc/g1/TestHumongousConcurrentStartUndo.java 8314841 generic-all
+gc/g1/TestLargePageUseForAuxMemory.java 8314841 generic-all
+gc/g1/TestLargePageUseForHeap.java 8314841 generic-all
+gc/g1/TestMarkStackSizes.java 8314841 generic-all
 gc/g1/TestMixedGCLiveThreshold.java#0percent
 gc/g1/TestMixedGCLiveThreshold.java#100percent
 gc/g1/TestMixedGCLiveThreshold.java#25percent
-gc/g1/TestOneEdenRegionAfterGC.java 0000000 generic-all
-gc/g1/TestPLABOutput.java 0000000 generic-all
-gc/g1/TestPLABSizeBounds.java 0000000 generic-all
-gc/g1/TestPeriodicLogMessages.java 0000000 generic-all
-gc/g1/TestPrintRegionRememberedSetInfo.java 0000000 generic-all
-gc/g1/TestRemsetLogging.java 0000000 generic-all
-gc/g1/TestRemsetLoggingPerRegion.java 0000000 generic-all
-gc/g1/TestRemsetLoggingThreads.java 0000000 generic-all
-gc/g1/TestSharedArchiveWithPreTouch.java 0000000 generic-all
-gc/g1/TestShrinkDefragmentedHeap.java 0000000 generic-all
-gc/g1/TestSkipRebuildRemsetPhase.java 0000000 generic-all
-gc/g1/TestVerifyGCType.java 0000000 generic-all
-gc/g1/mixedgc/TestLogging.java 0000000 generic-all
+gc/g1/TestOneEdenRegionAfterGC.java 8314841 generic-all
+gc/g1/TestPLABOutput.java 8314841 generic-all
+gc/g1/TestPLABSizeBounds.java 8314841 generic-all
+gc/g1/TestPeriodicLogMessages.java 8314841 generic-all
+gc/g1/TestPrintRegionRememberedSetInfo.java 8314841 generic-all
+gc/g1/TestRemsetLogging.java 8314841 generic-all
+gc/g1/TestRemsetLoggingPerRegion.java 8314841 generic-all
+gc/g1/TestRemsetLoggingThreads.java 8314841 generic-all
+gc/g1/TestSharedArchiveWithPreTouch.java 8314841 generic-all
+gc/g1/TestShrinkDefragmentedHeap.java 8314841 generic-all
+gc/g1/TestSkipRebuildRemsetPhase.java 8314841 generic-all
+gc/g1/TestVerifyGCType.java 8314841 generic-all
+gc/g1/mixedgc/TestLogging.java 8314841 8314841
+gc/g1/mixedgc/TestLogging.java 8314841 
+gc/g1/pinnedobjs/TestPinnedOldObjectsEvacuation.java 8314841 generic-all
+gc/g1/pinnedobjs/TestPinnedObjectTypes.java 8314841 generic-all
+gc/g1/pinnedobjs/TestPinnedObjectsEvacuation.java 8314841 generic-all
+gc/g1/TestAllocationFailure.java 8314841 generic-all
 gc/logging/TestDeprecatedPrintFlags.java 0000000 generic-all
 gc/logging/TestGCId.java 0000000 generic-all
 gc/logging/TestPrintReferences.java 0000000 generic-all
@@ -104,12 +113,14 @@ gc/metaspace/TestSizeTransitions.java#id1
 gc/metaspace/TestSizeTransitions.java#id2
 gc/serial/HeapChangeLogging.java 0000000 generic-all
 gc/stress/TestStressG1Uncommit.java 0000000 generic-all
-gc/x/TestAllocateHeapAt.java 0000000 generic-all
-gc/x/TestPageCacheFlush.java 0000000 generic-all
-gc/x/TestSmallHeap.java 0000000 generic-all
-gc/z/TestAllocateHeapAt.java 0000000 generic-all
-gc/z/TestPageCacheFlush.java 0000000 generic-all
-gc/z/TestSmallHeap.java 0000000 generic-all
+gc/x/TestAllocateHeapAt.java 8314842 generic-all
+gc/x/TestPageCacheFlush.java 8314842 generic-all
+gc/x/TestSmallHeap.java 8314842 generic-all
+gc/x/TestDeprecated.java 8314842 generic-all
+gc/z/TestDefault.java 8314842 generic-all
+gc/z/TestAllocateHeapAt.java 8314842 generic-all
+gc/z/TestPageCacheFlush.java 8314842 generic-all
+gc/z/TestSmallHeap.java 8314842 generic-all
 gtest/AsyncLogGtest.java 0000000 generic-all
 gtest/NMTGtests.java#nmt-detail
 gtest/NMTGtests.java#nmt-off
@@ -151,7 +162,8 @@ runtime/ReservedStack/ReservedStackTestCompiler.java 0000000 generic-all
 runtime/StackGap/TestStackGap.java 0000000 generic-all
 runtime/StackGuardPages/TestStackGuardPages.java 0000000 generic-all
 runtime/TLS/TestTLS.java 0000000 generic-all
-runtime/Thread/TestAlwaysPreTouchStacks.java 0000000 generic-all
+runtime/Thread/TestAlwaysPreTouchStacks.java#noPreTouch 8339888
+runtime/Thread/TestAlwaysPreTouchStacks.java#preTouch 8339888
 runtime/Thread/TooSmallStackSize.java 0000000 generic-all
 runtime/XCheckJniJsig/XCheckJSig.java 0000000 generic-all
 runtime/cds/TestCDSVMCrash.java 0000000 generic-all
@@ -172,6 +184,9 @@ runtime/jsig/Testjsig.java 0000000 generic-all
 runtime/logging/FoldMultilinesTest.java 0000000 generic-all
 runtime/os/THPsInThreadStackPreventionTest.java#ENABLED
 runtime/os/TestHugePageDetection.java 0000000 generic-all
+runtime/os/TestHugePageDecisionsAtVMStartup.java#Default 8339886
+runtime/os/TestHugePageDecisionsAtVMStartup.java#LP_enabled 8339886
+runtime/os/TestHugePageDecisionsAtVMStartup.java#THP_enabled 8339886
 runtime/os/TestTrimNative.java#testOffByDefault
 runtime/os/TestTrimNative.java#testOffExplicit
 runtime/os/TestTrimNative.java#trimNative
@@ -184,6 +199,7 @@ runtime/posixSig/TestPosixSig.java 0000000 generic-all
 
 ## Start debugger
 serviceability/sa/UniqueVtableTest.java 0000000 generic-all
+serviceability/sa/TestDebugInfoDecode.java 0000000 generic-all
 serviceability/sa/TestObjectMonitorIterate.java 0000000 generic-all
 serviceability/sa/TestObjectAlignment.java 0000000 generic-all
 serviceability/sa/TestInstanceKlassSizeForInterface.java 0000000 generic-all
