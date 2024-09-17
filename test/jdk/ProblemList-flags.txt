@@ -1,0 +1,5 @@
+
+# Don't support unexpected output
+
+java/util/logging/LoggingDeadlock2.java
+java/util/zip/EntryCount64k.java
