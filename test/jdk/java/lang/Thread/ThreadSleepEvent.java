@@ -24,6 +24,7 @@
 /**
  * @test
  * @summary Test that Thread.sleep emits a JFR jdk.ThreadSleep event
+ * @requires vm.opt.StartFlightRecording == null | vm.opt.StartFlightRecording == false
  * @modules jdk.jfr
  * @run junit ThreadSleepEvent
  */

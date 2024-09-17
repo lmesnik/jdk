@@ -32,6 +32,7 @@
  * @summary Checks that JNI_OnLoad is invoked only once when multiple threads
  *          call System.loadLibrary concurrently, and JNI_OnUnload is invoked
  *          when the native library is loaded from a custom class loader.
+ * @requires vm.opt.ExplicitGCInvokesConcurrent != true
  * @library /test/lib
  * @build LoadLibraryUnload p.Class1
  * @run main/othervm/native LoadLibraryUnloadTest
