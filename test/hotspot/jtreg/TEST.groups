@@ -591,7 +591,8 @@ tier4 = \
   :hotspot_all_no_apps \
  -:tier1 \
  -:tier2 \
- -:tier3
+ -:tier3 \
+ -:vmTestbase
 
 hotspot_tier2_runtime = \
   runtime/ \
