@@ -592,7 +592,7 @@ tier4 = \
  -:tier1 \
  -:tier2 \
  -:tier3 \
- -:vmTestbase
+ -vmTestbase
 
 hotspot_tier2_runtime = \
   runtime/ \

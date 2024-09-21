@@ -126,6 +126,7 @@ gtest/NMTGtests.java#nmt-detail
 gtest/NMTGtests.java#nmt-off
 gtest/NMTGtests.java#nmt-summary
 gtest/NativeHeapTrimmerGtest.java 0000000 generic-all
+gtest/CompressedKlassGtest.java
 runtime/7158988/FieldMonitor.java 0000000 generic-all
 runtime/8176717/TestInheritFD.java 0000000 generic-all
 runtime/BadObjectClass/BootstrapRedefine.java 0000000 generic-all
