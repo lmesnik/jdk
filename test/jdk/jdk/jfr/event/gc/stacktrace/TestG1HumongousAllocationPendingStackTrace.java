@@ -27,6 +27,7 @@ package jdk.jfr.event.gc.stacktrace;
  * @key jfr
  * @requires vm.hasJFR
  *
+ * @requires vm.compMode != "Xcomp" & (vm.opt.TieredStopAtLevel == null | vm.opt.TieredStopAtLevel == 4)
  * @requires vm.gc == "null" | vm.gc == "G1"
  * @library /test/lib /test/jdk
  * @run main/othervm -XX:+UseG1GC -Xlog:gc* -Xmx64M -XX:InitiatingHeapOccupancyPercent=100

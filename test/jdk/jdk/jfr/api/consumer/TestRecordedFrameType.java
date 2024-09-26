@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2021, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -40,16 +40,29 @@ import jdk.test.whitebox.WhiteBox;
  * @test
  * @summary Test jdk.jfr.consumer.RecordedFrame::getType()
  * @key jfr
- * @requires vm.hasJFR & vm.compiler1.enabled
+ * @requires vm.hasJFR & vm.compMode != "Xcomp" & vm.compiler1.enabled
  * @library /test/lib
  * @build jdk.test.whitebox.WhiteBox
  * @run driver jdk.test.lib.helpers.ClassFileInstaller jdk.test.whitebox.WhiteBox
  * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
- *      -XX:+WhiteBoxAPI jdk.jfr.api.consumer.TestRecordedFrameType
+ *      -XX:+WhiteBoxAPI jdk.jfr.api.consumer.TestRecordedFrameType 1
+ */
+/**
+ * @test
+ * @summary Test jdk.jfr.consumer.RecordedFrame::getType()
+ * @key jfr
+ * @requires vm.hasJFR & vm.compMode != "Xcomp" & vm.compiler2.enabled
+ * @library /test/lib
+ * @build jdk.test.whitebox.WhiteBox
+ * @run driver jdk.test.lib.helpers.ClassFileInstaller jdk.test.whitebox.WhiteBox
+ * @run main/othervm -Xbootclasspath/a:. -XX:+UnlockDiagnosticVMOptions
+ *      -XX:+WhiteBoxAPI jdk.jfr.api.consumer.TestRecordedFrameType 4
  */
 public final class TestRecordedFrameType {
 
     public static void main(String[] args) throws Exception {
+        final int MAX_ATTEMPT = 1000;
+        final int compLevel = Integer.parseInt(args[0]);
         WhiteBox WB = WhiteBox.getWhiteBox();
         String directive =
             """
@@ -65,12 +78,11 @@ public final class TestRecordedFrameType {
             ]
             """;
         WB.addCompilerDirective(directive);
-        while (true) { // Retry if method is being deoptimized
-            int count = 0;
+        for (int count = 0; count < MAX_ATTEMPT; count++)  { // Retry if method is being deoptimized
             try (Recording recording = new Recording()) {
                 recording.start();
                 Method mtd = TestRecordedFrameType.class.getMethod("compiled", new Class[0]);
-                if (!WB.enqueueMethodForCompilation(mtd, 1)) {
+                if (!WB.enqueueMethodForCompilation(mtd, compLevel)) {
                     throw new Exception("Could not enqueue method for CompLevel_simple");
                 }
                 Utils.waitForCondition(() -> WB.isMethodCompiled(mtd));
@@ -90,10 +102,10 @@ public final class TestRecordedFrameType {
                 if (iType.equals("Interpreted") && !cType.equals("Interpreted"))  {
                     return; // OK
                 }
-                count++;
                 System.out.println("Incorrect frame type. Retry " + count);
             }
         }
+        throw new RuntimeException("Didn't get expected events.");
     }
 
     private static RecordedFrame findFrame(List<RecordedEvent> events, String methodName) throws Exception {

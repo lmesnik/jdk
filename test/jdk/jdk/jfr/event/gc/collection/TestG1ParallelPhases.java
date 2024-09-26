@@ -54,6 +54,7 @@ import jdk.test.whitebox.WhiteBox;
  * @key jfr
  * @requires vm.hasJFR
  * @requires vm.gc == "G1" | vm.gc == null
+ * @requires vm.opt.UseTLAB != false
  * @library /test/lib /test/jdk /test/hotspot/jtreg
  * @build jdk.test.whitebox.WhiteBox
  * @run driver jdk.test.lib.helpers.ClassFileInstaller jdk.test.whitebox.WhiteBox

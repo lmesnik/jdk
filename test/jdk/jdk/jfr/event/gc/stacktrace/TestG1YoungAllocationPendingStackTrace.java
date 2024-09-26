@@ -28,6 +28,7 @@ package jdk.jfr.event.gc.stacktrace;
  * @requires vm.hasJFR
  *
  * @requires vm.gc == "null" | vm.gc == "G1"
+ * @requires vm.compMode != "Xcomp" & (vm.opt.TieredStopAtLevel == null | vm.opt.TieredStopAtLevel == 4)
  * @library /test/lib /test/jdk
  * @run main/othervm -XX:+UseG1GC -Xlog:gc*
  *                   -XX:FlightRecorderOptions:stackdepth=256

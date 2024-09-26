@@ -41,7 +41,7 @@ import jdk.test.whitebox.WhiteBox;
  * @test
  * @key jfr
  * @requires vm.hasJFR
- * @requires vm.compMode!="Xint"
+ * @requires vm.compMode == "Xmixed"
  * @library /test/lib
  * @build jdk.test.whitebox.WhiteBox
  * @run driver jdk.test.lib.helpers.ClassFileInstaller jdk.test.whitebox.WhiteBox

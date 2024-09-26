@@ -27,6 +27,7 @@ package jdk.jfr.event.gc.stacktrace;
  * @key jfr
  * @requires vm.hasJFR
  *
+ * @requires vm.compMode != "Xcomp" & (vm.opt.TieredStopAtLevel == null | vm.opt.TieredStopAtLevel == 4)
  * @requires vm.gc == "null" | vm.gc == "Parallel"
  * @library /test/lib /test/jdk
  * @run main/othervm -XX:MaxNewSize=10M -Xmx64M -XX:+UseParallelGC -Xlog:gc*

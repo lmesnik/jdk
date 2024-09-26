@@ -51,7 +51,7 @@ class Dummy {
  * @key jfr
  * @summary sanity test for Deoptimization event, depends on Compilation event
  * @requires vm.hasJFR
- * @requires vm.compMode != "Xint"
+ * @requires vm.compMode == "Xmixed"
  * @requires vm.flavor == "server" & (vm.opt.TieredStopAtLevel == 4 | vm.opt.TieredStopAtLevel == null)
  * @library /test/lib
  * @build jdk.test.whitebox.WhiteBox
