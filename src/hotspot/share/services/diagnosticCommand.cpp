@@ -56,6 +56,7 @@
 #include "runtime/javaCalls.hpp"
 #include "runtime/jniHandles.hpp"
 #include "runtime/os.hpp"
+#include "runtime/threads.hpp"
 #include "runtime/vmOperations.hpp"
 #include "runtime/vm_version.hpp"
 #include "services/diagnosticArgument.hpp"
@@ -340,6 +341,8 @@ void JVMTIAgentLoadDCmd::execute(DCmdSource source, TRAPS) {
 #endif // INCLUDE_JVMTI
 #endif // INCLUDE_SERVICES
 
+static char buf[O_BUFLEN]; // cannot use global scratch buffer
+
 void LocksDumpDCmd::execute(DCmdSource source, TRAPS) {
   outputStream* out = output();
   out->print("VM state: ");
@@ -348,6 +351,28 @@ void LocksDumpDCmd::execute(DCmdSource source, TRAPS) {
   else out->print("not at safepoint");
   out->print_cr("\n");
   print_owned_locks_on_error(out);
+  //frame f = os::current_frame();
+  //Thread* current = Thread::current();
+
+  out->print_cr("Java Threads: ");
+  for (JavaThreadIteratorWithHandle jtiwh; JavaThread *jt = jtiwh.next(); ) {
+	jt->print_on(out, true);
+	if (!jt->has_last_Java_frame()) {
+	  continue;
+	}
+	frame f  = jt->last_frame();
+
+	VMError::print_native_stack(out, f, jt, true /*print_source_info */,
+								-1 /* max stack_stream */, buf, O_BUFLEN);
+  }
+
+  out->print_cr("Non-Java Threads: ");
+  for (NonJavaThread::Iterator njti; !njti.end(); njti.step()) {
+	Thread *t = njti.current();
+	t->print_on(out, true);
+
+  }
+  //Threads::print_on(out, true, false, false, true);
 }
 
 

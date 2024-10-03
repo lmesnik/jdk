@@ -228,33 +228,6 @@ class ThreadBlockInVM  : public ThreadBlockInVMPreprocess<> {
   static void emptyOp(JavaThread* current) {}
 };
 
-template <typename PRE_PROC = void(JavaThread*)>
-class ThreadBlockInVMNoSafepointPreprocess : public ThreadStateTransition {
-private:
-  PRE_PROC& _pr;
-  bool _allow_suspend;
-public:
-  ThreadBlockInVMNoSafepointPreprocess(JavaThread* thread, PRE_PROC& pr, bool allow_suspend = false)
-	  : ThreadStateTransition(thread), _pr(pr), _allow_suspend(allow_suspend) {
-	transition_from_vm(thread, _thread_blocked);
-  }
-  ~ThreadBlockInVMNoSafepointPreprocess() {
-	assert(_thread->thread_state() == _thread_blocked, "coming from wrong thread state");
-	// Change back to _thread_in_vm and ensure it is seen by the VM thread.
-	_thread->set_thread_state_fence(_thread_in_vm);
-  }
-};
-
-
-class ThreadBlockInVMNoSafepoint  : public ThreadBlockInVMNoSafepointPreprocess<> {
-public:
-  ThreadBlockInVMNoSafepoint(JavaThread* thread, bool allow_suspend = false)
-	  : ThreadBlockInVMNoSafepointPreprocess(thread, emptyOp, allow_suspend) {}
-private:
-  static void emptyOp(JavaThread* current) {}
-};
-
-
 // Debug class instantiated in JRT_ENTRY macro.
 // Can be used to verify properties on enter/exit of the VM.
 

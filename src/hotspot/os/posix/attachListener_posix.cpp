@@ -346,6 +346,37 @@ PosixAttachOperation* PosixAttachListener::read_request(int s) {
   return op;
 }
 
+static bool _should_process_safepoint = 0;
+template <typename PRE_PROC = void(JavaThread*)>
+class ThreadBlockInVMNoSafepointPreprocess : public ThreadStateTransition {
+private:
+  PRE_PROC& _pr;
+  bool _allow_suspend;
+public:
+  static void disable_process_safepoint() {
+	_should_process_safepoint = false;
+  }
+  ThreadBlockInVMNoSafepointPreprocess(JavaThread* thread, PRE_PROC& pr, bool allow_suspend = false)
+	  : ThreadStateTransition(thread), _pr(pr), _allow_suspend(allow_suspend) {
+	transition_from_vm(thread, _thread_blocked);
+  }
+  ~ThreadBlockInVMNoSafepointPreprocess() {
+	assert(_thread->thread_state() == _thread_blocked, "coming from wrong thread state");
+	// Change back to _thread_in_vm and ensure it is seen by the VM thread.
+	_thread->set_thread_state_fence(_thread_in_vm);
+  }
+};
+
+
+class ThreadBlockInVMNoSafepoint  : public ThreadBlockInVMNoSafepointPreprocess<> {
+public:
+  ThreadBlockInVMNoSafepoint(JavaThread* thread, bool allow_suspend = false)
+	  : ThreadBlockInVMNoSafepointPreprocess(thread, emptyOp, allow_suspend) {}
+private:
+  static void emptyOp(JavaThread* current) {}
+};
+
+
 // Dequeue an operation
 //
 // In the Linux and BSD implementations, there is only a single operation and
@@ -467,6 +498,11 @@ AttachOperation* AttachListener::dequeue() {
   ThreadBlockInVMNoSafepoint tbivm(thread);
 
   AttachOperation* op = PosixAttachListener::dequeue();
+  const char* command = op->arg(0);
+  if (strstr(command, "Locks.") == command) {
+	tbivm.disable_process_safepoint();
+  }
+  tty->print_cr("%s", op->arg(0));
 
   return op;
 }
