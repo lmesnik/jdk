@@ -530,7 +530,23 @@ public class JavaThread extends Thread {
     }
   }
 
+  public void printOwnedMutexes(PrintStream out) {
+    Address mutexAddress = this.ownedMonitor();
+
+    if (mutexAddress != null) {
+      System.out.print("   Owned VM mutexes: ");
+      StringJoiner mutexes = new StringJoiner(", ");
+      while (mutexAddress != null) {
+        Mutex mutex = new Mutex(mutexAddress);
+        mutexes.add(mutex.name());
+        mutexAddress = mutex.next();
+      }
+      System.out.println(mutexes);
+    }
+  }
+
   public void printThreadInfoOn(PrintStream out){
+
       String threadName = "<unknown>";
       boolean daemon = false;
       int priority = java.lang.Thread.MIN_PRIORITY - 1;

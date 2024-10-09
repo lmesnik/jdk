@@ -638,6 +638,7 @@
   nonstatic_field(ThreadShadow,                _exception_line,                               int)                                   \
   nonstatic_field(Thread,                      _tlab,                                         ThreadLocalAllocBuffer)                \
   nonstatic_field(Thread,                      _allocated_bytes,                              jlong)                                 \
+  nonstatic_field(Thread,                      _owned_locks,                                  Mutex*)                                \
   nonstatic_field(JavaThread,                  _lock_stack,                                   LockStack)                             \
   nonstatic_field(LockStack,                   _top,                                          uint32_t)                              \
   nonstatic_field(LockStack,                   _base[0],                                      oop)                                   \
@@ -646,7 +647,7 @@
   nonstatic_field(JavaThread,                  _threadObj,                                    OopHandle)                             \
   nonstatic_field(JavaThread,                  _vthread,                                      OopHandle)                             \
   nonstatic_field(JavaThread,                  _jvmti_vthread,                                OopHandle)                             \
-  nonstatic_field(JavaThread,                  _scopedValueCache,                              OopHandle)                             \
+  nonstatic_field(JavaThread,                  _scopedValueCache,                             OopHandle)                             \
   nonstatic_field(JavaThread,                  _anchor,                                       JavaFrameAnchor)                       \
   nonstatic_field(JavaThread,                  _vm_result,                                    oop)                                   \
   nonstatic_field(JavaThread,                  _vm_result_2,                                  Metadata*)                             \
@@ -1020,8 +1021,10 @@
   nonstatic_field(elapsedTimer,                _active,                                       bool)                                  \
   nonstatic_field(InvocationCounter,           _counter,                                      unsigned int)                          \
                                                                                                                                      \
-  nonstatic_field(UpcallStub::FrameData,       jfa,                                           JavaFrameAnchor)
-
+  nonstatic_field(UpcallStub::FrameData,       jfa,                                           JavaFrameAnchor)                       \
+  nonstatic_field(Mutex,                       _name,                                         const char*)                           \
+  nonstatic_field(Mutex,                       _next,                                          Mutex*)                                \
+  volatile_nonstatic_field(Mutex,              _owner,                                         Thread*)
 //--------------------------------------------------------------------------------
 // VM_TYPES
 //
@@ -1861,7 +1864,7 @@
   /********************/                                                  \
                                                                           \
   declare_toplevel_type(Abstract_VM_Version)                              \
-                                                                          \
+  declare_toplevel_type(Mutex)                                            \
   /*************/                                                         \
   /* Arguments */                                                         \
   /*************/                                                         \

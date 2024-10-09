@@ -75,6 +75,7 @@ public class StackTrace extends Tool {
                 JavaThread cur = threads.getJavaThreadAt(i);
                 if (cur.isJavaThread()) {
                     cur.printThreadInfoOn(tty);
+                    cur.printOwnedMutexes(tty);
                     try {
                         int count = 0;
 

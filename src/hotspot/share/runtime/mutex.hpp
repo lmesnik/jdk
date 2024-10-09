@@ -50,7 +50,7 @@
 // is nosafepoint or lower.
 
 class Mutex : public CHeapObj<mtSynchronizer> {
-
+ friend class VMStructs;
  public:
   // Special low level locks are given names and ranges avoid overlap.
   enum class Rank {

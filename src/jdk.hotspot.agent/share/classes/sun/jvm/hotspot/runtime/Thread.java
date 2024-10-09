@@ -40,6 +40,7 @@ public class Thread extends VMObject {
 
   private static JLongField allocatedBytesField;
 
+  private static AddressField mutexField;
   static {
     VM.registerVMInitializedObserver(new Observer() {
         public void update(Observable o, Object data) {
@@ -58,6 +59,8 @@ public class Thread extends VMObject {
     currentPendingMonitorField = typeJavaThread.getAddressField("_current_pending_monitor");
     currentWaitingMonitorField = typeJavaThread.getAddressField("_current_waiting_monitor");
     allocatedBytesField = typeThread.getJLongField("_allocated_bytes");
+
+    mutexField = typeThread.getAddressField("_owned_locks") ;
   }
 
   public Thread(Address addr) {
@@ -121,6 +124,11 @@ public class Thread extends VMObject {
     // underlying thread, which is only present for Java threads; see
     // JavaThread.java.
     return false;
+  }
+
+  Address ownedMonitor() {
+    Address monitorAddr = mutexField.getValue(addr);
+    return monitorAddr;
   }
 
   /** Assistance for ObjectMonitor implementation */
