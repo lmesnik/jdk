@@ -189,7 +189,7 @@ WB_END
 
 WB_ENTRY(jint, WB_Lock(JNIEnv* env, jobject wb, jstring lock_name, jint operation))
   JavaThread* self = JavaThread::current();
-  //MutexLocker mu(Compile_lock);
+  MutexLocker mu(Compile_lock);
   VM_ForceSafepointStuck force_safepoint_stuck_op;
   VMThread::execute(&force_safepoint_stuck_op);
   ShouldNotReachHere();
