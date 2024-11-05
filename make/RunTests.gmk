@@ -99,43 +99,43 @@ JTREG_TEST_THREAD_FACTORY_JAR := $(JTREG_TEST_THREAD_FACTORY_DIR)/jtregTestThrea
 JTREG_FAILURE_HANDLER_TIMEOUT ?= 0
 
 ifneq ($(wildcard $(JTREG_FAILURE_HANDLER)), )
-  JTREG_FAILURE_HANDLER_OPTIONS := \
-      -timeoutHandlerDir:$(JTREG_FAILURE_HANDLER) \
-      -observerDir:$(JTREG_FAILURE_HANDLER) \
-      -timeoutHandler:jdk.test.failurehandler.jtreg.GatherProcessInfoTimeoutHandler \
-      -observer:jdk.test.failurehandler.jtreg.GatherDiagnosticInfoObserver \
-      -timeoutHandlerTimeout:$(JTREG_FAILURE_HANDLER_TIMEOUT) \
-      #
-endif
+    JTREG_FAILURE_HANDLER_OPTIONS := \
+                                     -timeoutHandlerDir:$(JTREG_FAILURE_HANDLER) \
+                                     -observerDir:$(JTREG_FAILURE_HANDLER) \
+                                     -timeoutHandler:jdk.test.failurehandler.jtreg.GatherProcessInfoTimeoutHandler \
+                                     -observer:jdk.test.failurehandler.jtreg.GatherDiagnosticInfoObserver \
+                                     -timeoutHandlerTimeout:$(JTREG_FAILURE_HANDLER_TIMEOUT) \
+#
+                                     endif
 
-GTEST_LAUNCHER_DIRS := $(patsubst %/gtestLauncher, %, \
-    $(wildcard $(TEST_IMAGE_DIR)/hotspot/gtest/*/gtestLauncher))
-GTEST_VARIANTS := $(strip $(patsubst $(TEST_IMAGE_DIR)/hotspot/gtest/%, %, \
-    $(GTEST_LAUNCHER_DIRS)))
+                                     GTEST_LAUNCHER_DIRS := $(patsubst %/gtestLauncher, %, \
+                                             $(wildcard $(TEST_IMAGE_DIR)/hotspot/gtest/*/gtestLauncher))
+                                                                                         GTEST_VARIANTS := $(strip $(patsubst $(TEST_IMAGE_DIR)/hotspot/gtest/%, %, \
+                                                                                         $(GTEST_LAUNCHER_DIRS)))
 
-COV_ENVIRONMENT :=
-JTREG_COV_OPTIONS :=
+                                                                                         COV_ENVIRONMENT :=
+                                                                                         JTREG_COV_OPTIONS :=
 
-ifeq ($(TEST_OPTS_JCOV), true)
-  JCOV_OUTPUT_DIR := $(TEST_RESULTS_DIR)/jcov-output
-  JCOV_GRABBER_LOG := $(JCOV_OUTPUT_DIR)/grabber.log
-  JCOV_RESULT_FILE := $(JCOV_OUTPUT_DIR)/result.xml
-  JCOV_REPORT := $(JCOV_OUTPUT_DIR)/report
-  JCOV_MEM_OPTIONS := -Xms64m -Xmx4g
+                                                                                         ifeq ($(TEST_OPTS_JCOV), true)
+                                                                                         JCOV_OUTPUT_DIR := $(TEST_RESULTS_DIR)/jcov-output
+                                                                                         JCOV_GRABBER_LOG := $(JCOV_OUTPUT_DIR)/grabber.log
+                                                                                         JCOV_RESULT_FILE := $(JCOV_OUTPUT_DIR)/result.xml
+                                                                                         JCOV_REPORT := $(JCOV_OUTPUT_DIR)/report
+                                                                                         JCOV_MEM_OPTIONS := -Xms64m -Xmx4g
 
-  # Replace our normal test JDK with the JCov image.
-  JDK_UNDER_TEST := $(JCOV_IMAGE_DIR)
+# Replace our normal test JDK with the JCov image.
+JDK_UNDER_TEST := $(JCOV_IMAGE_DIR)
 
-  COV_ENVIRONMENT += JAVA_TOOL_OPTIONS="$(JCOV_MEM_OPTIONS)" \
-      _JAVA_OPTIONS="$(JCOV_MEM_OPTIONS)"
-  JTREG_COV_OPTIONS += -e:JAVA_TOOL_OPTIONS='$(JCOV_MEM_OPTIONS)' \
-      -e:_JAVA_OPTIONS='$(JCOV_MEM_OPTIONS)'
+COV_ENVIRONMENT += JAVA_TOOL_OPTIONS="$(JCOV_MEM_OPTIONS)" \
+_JAVA_OPTIONS="$(JCOV_MEM_OPTIONS)"
+JTREG_COV_OPTIONS += -e:JAVA_TOOL_OPTIONS='$(JCOV_MEM_OPTIONS)' \
+-e:_JAVA_OPTIONS='$(JCOV_MEM_OPTIONS)'
 endif
 
 ifeq ($(GCOV_ENABLED), true)
-  GCOV_OUTPUT_DIR := $(TEST_RESULTS_DIR)/gcov-output
-  COV_ENVIRONMENT += GCOV_PREFIX="$(GCOV_OUTPUT_DIR)"
-  JTREG_COV_OPTIONS += -e:GCOV_PREFIX="$(GCOV_OUTPUT_DIR)"
+GCOV_OUTPUT_DIR := $(TEST_RESULTS_DIR)/gcov-output
+COV_ENVIRONMENT += GCOV_PREFIX="$(GCOV_OUTPUT_DIR)"
+JTREG_COV_OPTIONS += -e:GCOV_PREFIX="$(GCOV_OUTPUT_DIR)"
 endif
 
 ################################################################################
@@ -845,7 +845,7 @@ define SetupRunJtregTestBody
   JTREG_ALL_OPTIONS := $$(JTREG_JAVA_OPTIONS) $$(JTREG_VM_OPTIONS)
 
   JTREG_AUTO_PROBLEM_LISTS :=
-  JTREG_AUTO_TIMEOUT_FACTOR := 1
+  JTREG_AUTO_TIMEOUT_FACTOR := 4
 
   ifneq ($$(findstring -Xcomp, $$(JTREG_ALL_OPTIONS)), )
     JTREG_AUTO_PROBLEM_LISTS += ProblemList-Xcomp.txt

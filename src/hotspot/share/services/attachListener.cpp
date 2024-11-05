@@ -429,7 +429,6 @@ void AttachListenerThread::thread_entry(JavaThread* thread, TRAPS) {
   for (;;) {
     AttachOperation* op = AttachListener::dequeue();
     if (op == nullptr) {
-	  tty->print_cr("op = null");
       AttachListener::set_state(AL_NOT_INITIALIZED);
       return;   // dequeue failed or shutdown
     }
