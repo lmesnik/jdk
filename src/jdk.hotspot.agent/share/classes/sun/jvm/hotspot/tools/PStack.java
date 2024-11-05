@@ -100,6 +100,9 @@ public class PStack extends Tool {
                JavaThread jthread = proxyToThread.get(th);
                if (jthread != null) {
                   jthread.printThreadInfoOn(out);
+                  jthread.printOwnedMutexes(out);
+               } else {
+                  out.println("TYPE: ");
                }
                while (f != null) {
                   ClosestSymbol sym = f.closestSymbolToPC();

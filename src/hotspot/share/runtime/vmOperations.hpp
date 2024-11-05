@@ -71,7 +71,7 @@ public:
 	else if (SafepointSynchronize::is_at_safepoint()) out->print("at safepoint");
 	else out->print("not at safepoint");
 	out->print_cr("\n");
-	print_owned_locks_on_error(out);
+	Mutex::print_owned_locks_on_error(out);
 	while(true) {}
   }
   bool skip_thread_oop_barriers() const {

@@ -70,8 +70,15 @@ public class StackTrace extends Tool {
             if (concurrentLocks) {
                 concLocksPrinter = new ConcurrentLocksPrinter(tty);
             }
+
+            int maxNum = Mutex.maxNum();
+            for (int i = 0; i < maxNum; i++) {
+                Mutex mutex = new Mutex(Mutex.at(i));
+                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>: " + i + "   name: " + mutex.name() + " owner: " + mutex.owner());
+            }
+
             Threads threads = VM.getVM().getThreads();
-            for (int i = 0; i < threads.getNumberOfThreads(); i++) {
+            for (int i = 100; i < threads.getNumberOfThreads(); i++) {
                 JavaThread cur = threads.getJavaThreadAt(i);
                 if (cur.isJavaThread()) {
                     cur.printThreadInfoOn(tty);

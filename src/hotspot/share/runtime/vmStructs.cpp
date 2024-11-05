@@ -1023,8 +1023,11 @@
                                                                                                                                      \
   nonstatic_field(UpcallStub::FrameData,       jfa,                                           JavaFrameAnchor)                       \
   nonstatic_field(Mutex,                       _name,                                         const char*)                           \
-  nonstatic_field(Mutex,                       _next,                                          Mutex*)                                \
+  static_field(Mutex,                          _mutex_array,                                   Mutex**)                              \
+  static_field(Mutex,                          _num_mutex,                                     int)                                  \
+  nonstatic_field(Mutex,                       _next,                                          Mutex*)                               \
   volatile_nonstatic_field(Mutex,              _owner,                                         Thread*)
+
 //--------------------------------------------------------------------------------
 // VM_TYPES
 //
