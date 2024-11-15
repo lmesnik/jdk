@@ -163,8 +163,7 @@ runtime/ReservedStack/ReservedStackTestCompiler.java 0000000 generic-all
 runtime/StackGap/TestStackGap.java 0000000 generic-all
 runtime/StackGuardPages/TestStackGuardPages.java 0000000 generic-all
 runtime/TLS/TestTLS.java 0000000 generic-all
-runtime/Thread/TestAlwaysPreTouchStacks.java#noPreTouch 8339888
-runtime/Thread/TestAlwaysPreTouchStacks.java#preTouch 8339888
+runtime/Thread/TestAlwaysPreTouchStacks.java#preTouchTest 8339888
 runtime/Thread/TooSmallStackSize.java 0000000 generic-all
 runtime/XCheckJniJsig/XCheckJSig.java 0000000 generic-all
 runtime/cds/TestCDSVMCrash.java 0000000 generic-all
