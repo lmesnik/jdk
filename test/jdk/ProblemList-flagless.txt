@@ -201,6 +201,36 @@ javax/script/ProviderTest.sh 8339890 generic-all
 ### not a vm flags
 sun/security/pkcs11/Cipher/PBECipher.java
 
+## tier4, not analyzed yet
+
+com/sun/nio/sctp/SctpChannel/CloseDescriptors.java
+com/sun/nio/sctp/SctpMultiChannel/Branch.java
+java/awt/FontClass/CreateFont/DeleteFont.sh
+java/awt/FontClass/CreateFont/fileaccess/FontFile.java
+java/awt/GraphicsEnvironment/TestDetectHeadless/TestDetectHeadless.sh
+java/awt/Toolkit/AutoShutdown/EventQueuePush/EventQueuePushAutoshutdown.sh
+java/awt/Toolkit/Headless/WrappedToolkitTest/WrappedToolkitTest.sh
+java/awt/font/FontPathEnvTest/FontPathEnvTest.java
+java/awt/font/GlyphVector/LayoutCompatTest.java
+java/awt/font/JNICheck/JNICheck.sh
+java/awt/print/PrinterJob/ExceptionTest.java
+java/awt/print/PrinterJob/ImagePrinting/NullClipARGB.java
+java/awt/print/PrinterJob/PrtException.java
+javax/imageio/metadata/IIOMetadataFormat/runMetadataFormatTest.sh
+javax/imageio/metadata/IIOMetadataFormat/runMetadataFormatThreadTest.sh
+javax/imageio/plugins/external_plugin_tests/TestClassPathPlugin.sh
+javax/imageio/spi/AppletContextTest/BadPluginConfigurationTest.sh
+javax/imageio/stream/DeleteOnExitTest.sh
+javax/imageio/stream/StreamCloserLeak/run_test.sh
+javax/print/CheckDupFlavor.java
+javax/print/PrintSE/PrintSE.sh
+javax/print/PrintServiceLookup/CountPrintServices.java
+javax/print/attribute/AttributeTest.java
+javax/print/attribute/GetCopiesSupported.java
+javax/print/attribute/SidesPageRangesTest.java
+javax/print/attribute/SupportedPrintableAreas.java
+javax/swing/text/html/CSS/bug8234913.java
+
 
 ### core-tools
 tools/jar/multiRelease/RuntimeTest.java 8319575 generic-all
