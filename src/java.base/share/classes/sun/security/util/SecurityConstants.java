@@ -72,14 +72,6 @@ public final class SecurityConstants {
     public static final NetPermission SPECIFY_HANDLER_PERMISSION =
        new NetPermission("specifyStreamHandler");
 
-    // java.net.ProxySelector
-    public static final NetPermission SET_PROXYSELECTOR_PERMISSION =
-       new NetPermission("setProxySelector");
-
-    // java.net.ProxySelector
-    public static final NetPermission GET_PROXYSELECTOR_PERMISSION =
-       new NetPermission("getProxySelector");
-
     // java.net.ServerSocket, java.net.Socket
     public static final NetPermission SET_SOCKETIMPL_PERMISSION =
         new NetPermission("setSocketImpl");
@@ -103,10 +95,6 @@ public final class SecurityConstants {
     // java.lang.Class
     public static final RuntimePermission GET_PD_PERMISSION =
         new RuntimePermission("getProtectionDomain");
-
-    // java.lang.Class, java.lang.ClassLoader, java.lang.Thread
-    public static final RuntimePermission GET_CLASSLOADER_PERMISSION =
-        new RuntimePermission("getClassLoader");
 
     // java.lang.Thread
     public static final RuntimePermission GET_STACK_TRACE_PERMISSION =
