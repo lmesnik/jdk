@@ -327,3 +327,32 @@ tools/jlink/plugins/SystemModuleDescriptors/ModuleMainClassTest.java 8319575 gen
 tools/jpackage/linux/ServiceAndDesktopTest.java 8319575 generic-all
 tools/launcher/InstanceMainTest.java 8319575 generic-all
 tools/launcher/LauncherExceptionTest.java 8319575 generic-all
+tools/jlink/runtimeImage/SystemModulesTest2.java
+tools/jlink/runtimeImage/SystemModulesTest.java
+tools/jlink/runtimeImage/PackagedModulesVsRuntimeImageLinkTest.java
+tools/jlink/runtimeImage/ModifiedFilesWarningTest.java
+tools/jlink/runtimeImage/JavaSEReproducibleTest.java
+tools/jlink/runtimeImage/GenerateJLIClassesTest.java
+tools/jlink/runtimeImage/CustomModuleJlinkTest.java
+tools/jlink/runtimeImage/BasicJlinkTest.java
+tools/jlink/runtimeImage/BasicJlinkMissingJavaBase.java
+tools/jlink/runtimeImage/AddOptionsTest.java
+tools/jpackage/share/VendorTest.java#id1
+tools/jpackage/share/NoMPathRuntimeTest.java
+tools/jpackage/share/MultipleJarAppTest.java
+tools/jpackage/share/ModulePathTest3.java
+tools/jpackage/share/ModulePathTest2.java
+tools/jpackage/share/ModulePathTest.java
+tools/jpackage/share/MainClassTest.java
+tools/jpackage/share/JLinkOptionsTest.java
+tools/jpackage/share/JavaOptionsTest.java
+tools/jpackage/share/JavaOptionsEqualsTest.java#id1
+tools/jpackage/share/JavaOptionsEqualsTest.java#id0
+tools/jpackage/share/InOutPathTest.java
+tools/jpackage/share/EmptyFolderTest.java#id1
+tools/jpackage/share/EmptyFolderTest.java#id0
+tools/jpackage/share/DotInNameTest.java
+tools/jpackage/share/CookedRuntimeTest.java
+tools/jpackage/share/BasicTest.java
+tools/jpackage/share/AppVersionTest.java
+tools/jpackage/linux/UsrTreeTest.java

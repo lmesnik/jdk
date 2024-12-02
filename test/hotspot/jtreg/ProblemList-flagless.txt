@@ -10,8 +10,12 @@ vmTestbase/vm/mlvm/indy/func/jdi/breakpointOtherStratum/Test.java 8316465 generi
 vmTestbase/vm/mlvm/meth/func/jdi/breakpoint/Test.java 8316465 generic-all
 vmTestbase/vm/mlvm/meth/func/jdi/breakpointOtherStratum/Test.java 8316465 generic-all
 
-runtime/Thread/TestAlwaysPreTouchStacks.java  8342074 generic-all
- 
+runtime/cds/appcds/AOTFlags.java                                8345345 generic-all
+runtime/cds/TestDefaultArchiveLoading.java#coops_coh            8345347 generic-all
+runtime/cds/TestDefaultArchiveLoading.java#coops_nocoh          8345347 generic-all
+runtime/cds/TestDefaultArchiveLoading.java#nocoops_coh          8345347 generic-all
+runtime/cds/TestDefaultArchiveLoading.java#nocoops_nocoh        8345347 generic-all
+
 
 compiler/ciReplay/TestInvalidReplayFile.java 0000000 generic-all
 compiler/codecache/CheckCodeCacheInfo.java 0000000 generic-all
