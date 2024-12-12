@@ -980,6 +980,7 @@ define SetupRunJtregTestBody
           -Dprogram=jtreg -jar $$(JT_HOME)/lib/jtreg.jar \
           $$($1_JTREG_BASIC_OPTIONS) \
           -testjdk:$$(JDK_UNDER_TEST) \
+          -testimage:${TEST_IMAGE_DIR} \
           -dir:$$(JTREG_TOPDIR) \
           -reportDir:$$($1_TEST_RESULTS_DIR) \
           -workDir:$$($1_TEST_SUPPORT_DIR) \

@@ -87,7 +87,7 @@ public class TsaServer implements AutoCloseable {
      *
      * @param handler a {@link TsaHandler}
      */
-    public void setHandler(TsaHandler handler) {
+    public final void setHandler(TsaHandler handler) {
         server.createContext("/", handler);
     }
 

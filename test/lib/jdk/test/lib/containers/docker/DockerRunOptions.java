@@ -70,7 +70,7 @@ public class DockerRunOptions {
         return this;
     }
 
-    public DockerRunOptions addJavaOpts(String... opts) {
+    public final DockerRunOptions addJavaOpts(String... opts) {
         Collections.addAll(javaOpts, opts);
         return this;
     }
