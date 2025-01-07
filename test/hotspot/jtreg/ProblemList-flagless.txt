@@ -134,6 +134,10 @@ gtest/NMTGtests.java#nmt-off
 gtest/NMTGtests.java#nmt-summary
 gtest/NativeHeapTrimmerGtest.java 0000000 generic-all
 gtest/CompressedKlassGtest.java 0000000 generic-all
+gtest/CompressedKlassGtest.java#use-zero-based-encoding-coh-large-class-space
+gtest/CompressedKlassGtest.java#use-zero-based-encoding-coh
+gtest/CompressedKlassGtest.java#use-zero-based-encoding
+gtest/CompressedKlassGtest.java#ccp_off
 runtime/7158988/FieldMonitor.java 0000000 generic-all
 runtime/8176717/TestInheritFD.java 0000000 generic-all
 runtime/BadObjectClass/BootstrapRedefine.java 0000000 generic-all
