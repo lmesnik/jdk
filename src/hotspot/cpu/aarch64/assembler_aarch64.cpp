@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2025, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2014, 2020 Red Hat Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -22,7 +22,6 @@
  * questions.
  */
 
-#include "precompiled.hpp"
 #include "asm/assembler.hpp"
 #include "asm/assembler.inline.hpp"
 #include "asm/macroAssembler.hpp"
@@ -457,7 +456,7 @@ void Assembler::bang_stack_with_offset(int offset) { Unimplemented(); }
 
 bool asm_util::operand_valid_for_immediate_bits(int64_t imm, unsigned nbits) {
   guarantee(nbits == 8 || nbits == 12, "invalid nbits value");
-  uint64_t uimm = (uint64_t)uabs((jlong)imm);
+  uint64_t uimm = (uint64_t)g_uabs((jlong)imm);
   if (uimm < (UCONST64(1) << nbits))
     return true;
   if (uimm < (UCONST64(1) << (2 * nbits))

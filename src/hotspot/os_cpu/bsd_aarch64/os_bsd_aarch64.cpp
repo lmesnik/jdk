@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1999, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1999, 2025, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2014, Red Hat Inc. All rights reserved.
  * Copyright (c) 2021, Azul Systems, Inc. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -24,7 +24,6 @@
  *
  */
 
-// no precompiled headers
 #include "asm/macroAssembler.hpp"
 #include "classfile/classLoader.hpp"
 #include "classfile/vmSymbols.hpp"
@@ -272,11 +271,8 @@ bool PosixSignals::pd_hotspot_signal_handler(int sig, siginfo_t* info,
           stub = SharedRuntime::handle_unsafe_access(thread, next_pc);
         }
       } else if (sig == SIGILL && nativeInstruction_at(pc)->is_stop()) {
-        // Pull a pointer to the error message out of the instruction
-        // stream.
-        const uint64_t *detail_msg_ptr
-          = (uint64_t*)(pc + NativeInstruction::instruction_size);
-        const char *detail_msg = (const char *)*detail_msg_ptr;
+        // A pointer to the message will have been placed in r0
+        const char *detail_msg = (const char *)(uc->uc_mcontext->DU3_PREFIX(ss,x[0]));
         const char *msg = "stop";
         if (TraceTraps) {
           tty->print_cr("trap: %s: (SIGILL)", msg);
@@ -501,6 +497,7 @@ static inline void atomic_copy64(const volatile void *src, volatile void *dst) {
 }
 
 extern "C" {
+  // needs local assembler label '1:' to avoid trouble when using linktime optimization
   int SpinPause() {
     // We don't use StubRoutines::aarch64::spin_wait stub in order to
     // avoid a costly call to os::current_thread_enable_wx() on MacOS.
@@ -523,14 +520,14 @@ extern "C" {
                                       // to entry for case SpinWait::NOP
         "  add  %[d], %[d], %[o]  \n"
         "  br   %[d]              \n"
-        "  b    SpinPause_return  \n" // case SpinWait::NONE  (-1)
+        "  b    1f                \n" // case SpinWait::NONE  (-1)
         "  nop                    \n" // padding
         "  nop                    \n" // case SpinWait::NOP   ( 0)
-        "  b    SpinPause_return  \n"
+        "  b    1f                \n"
         "  isb                    \n" // case SpinWait::ISB   ( 1)
-        "  b    SpinPause_return  \n"
+        "  b    1f                \n"
         "  yield                  \n" // case SpinWait::YIELD ( 2)
-        "SpinPause_return:        \n"
+        "1:        \n"
         : [d]"=&r"(br_dst)
         : [o]"r"(off)
         : "memory");

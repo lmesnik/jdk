@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2020, 2025, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2020, 2022, Red Hat Inc.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -38,7 +38,6 @@ import jdk.internal.javac.PreviewFeature;
 import jdk.internal.vm.annotation.ForceInline;
 import jdk.internal.vm.annotation.Hidden;
 import jdk.internal.vm.ScopedValueContainer;
-import sun.security.action.GetPropertyAction;
 
 /**
  * A value that may be safely and efficiently shared to methods without using method
@@ -158,7 +157,8 @@ import sun.security.action.GetPropertyAction;
  *     private static final ScopedValue<String> NAME = ScopedValue.newInstance();
 
  *     ScopedValue.where(NAME, "duke").run(() -> {
- *         try (var scope = new StructuredTaskScope<String>()) {
+ *         // @link substring="open" target="StructuredTaskScope#open()" :
+ *         try (var scope = StructuredTaskScope.open()) {
  *
  *              // @link substring="fork" target="StructuredTaskScope#fork(java.util.concurrent.Callable)" :
  *              scope.fork(() -> childTask1());
@@ -740,7 +740,7 @@ public final class ScopedValue<T> {
 
         static {
             final String propertyName = "java.lang.ScopedValue.cacheSize";
-            var sizeString = GetPropertyAction.privilegedGetProperty(propertyName, "16");
+            var sizeString = System.getProperty(propertyName, "16");
             var cacheSize = Integer.valueOf(sizeString);
             if (cacheSize < 2 || cacheSize > MAX_CACHE_SIZE) {
                 cacheSize = MAX_CACHE_SIZE;

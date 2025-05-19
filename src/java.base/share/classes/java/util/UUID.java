@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2003, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2003, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -83,17 +83,13 @@ public final class UUID implements java.io.Serializable, Comparable<UUID> {
     @java.io.Serial
     private static final long serialVersionUID = -4856846361193249489L;
 
-    /*
-     * The most significant 64 bits of this UUID.
-     *
-     * @serial
+    /**
+     * @serial The most significant 64 bits of this UUID.
      */
     private final long mostSigBits;
 
-    /*
-     * The least significant 64 bits of this UUID.
-     *
-     * @serial
+    /**
+     * @serial The least significant 64 bits of this UUID.
      */
     private final long leastSigBits;
 
@@ -485,7 +481,7 @@ public final class UUID implements java.io.Serializable, Comparable<UUID> {
         HexDigits.put4(buf, 28, i3 >> 16);
         HexDigits.put4(buf, 32, i3);
         try {
-            return jla.newStringNoRepl(buf, StandardCharsets.ISO_8859_1);
+            return jla.uncheckedNewStringNoRepl(buf, StandardCharsets.ISO_8859_1);
         } catch (CharacterCodingException cce) {
             throw new AssertionError(cce);
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015, 2025, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,11 +22,11 @@
  *
  */
 
-#include "precompiled.hpp"
 #include "cds/aotConstantPoolResolver.hpp"
 #include "cds/archiveUtils.hpp"
 #include "cds/classListParser.hpp"
 #include "cds/lambdaFormInvokers.hpp"
+#include "cds/lambdaProxyClassDictionary.hpp"
 #include "cds/metaspaceShared.hpp"
 #include "cds/unregisteredClasses.hpp"
 #include "classfile/classLoaderExt.hpp"
@@ -43,6 +43,7 @@
 #include "jvm.h"
 #include "logging/log.hpp"
 #include "logging/logTag.hpp"
+#include "memory/oopFactory.hpp"
 #include "memory/resourceArea.hpp"
 #include "oops/constantPool.inline.hpp"
 #include "runtime/atomic.hpp"
@@ -110,6 +111,12 @@ ClassListParser::~ClassListParser() {
   delete _indy_items;
   delete _interfaces;
   _instance = nullptr;
+}
+
+void ClassListParser::parse_classlist(const char* classlist_path, ParseMode parse_mode, TRAPS) {
+  UnregisteredClasses::initialize(CHECK);
+  ClassListParser parser(classlist_path, parse_mode);
+  parser.parse(THREAD);
 }
 
 void ClassListParser::parse(TRAPS) {
@@ -388,6 +395,15 @@ bool ClassListParser::parse_uint_option(const char* option_name, int* value) {
   return false;
 }
 
+GrowableArray<InstanceKlass *> ClassListParser::get_specified_interfaces() {
+  const int n = _interfaces->length();
+  GrowableArray<InstanceKlass *> specified_interfaces(n);
+  for (int i = 0; i < n; i++) {
+    specified_interfaces.append(lookup_class_by_id(_interfaces->at(i)));
+  }
+  return specified_interfaces;
+}
+
 void ClassListParser::print_specified_interfaces() {
   const int n = _interfaces->length();
   jio_fprintf(defaultStream::error_stream(), "Currently specified interfaces[%d] = {\n", n);
@@ -424,10 +440,9 @@ void ClassListParser::print_diagnostic_info(outputStream* st, const char* msg, v
     error_index = 0;
   }
 
-  jio_fprintf(defaultStream::error_stream(),
-              "An error has occurred while processing class list file %s %zu:%d.\n",
-              _classlist_file, lineno(), (error_index + 1));
-  jio_vfprintf(defaultStream::error_stream(), msg, ap);
+  st->print("An error has occurred while processing class list file %s %zu:%d.\n",
+            _classlist_file, lineno(), (error_index + 1));
+  st->vprint(msg, ap);
 
   if (_line_len <= 0) {
     st->print("\n");
@@ -490,6 +505,25 @@ void ClassListParser::constant_pool_resolution_warning(const char* msg, ...) {
   va_end(ap);
 }
 
+// If an unregistered class U is specified to have a registered supertype S1
+// named SN but an unregistered class S2 also named SN has already been loaded
+// S2 will be incorrectly used as the supertype of U instead of S1 due to
+// limitations in the loading mechanism of unregistered classes.
+void ClassListParser::check_supertype_obstruction(int specified_supertype_id, const InstanceKlass* specified_supertype, TRAPS) {
+  if (specified_supertype->is_shared_unregistered_class()) {
+    return; // Only registered supertypes can be obstructed
+  }
+  const InstanceKlass* obstructor = SystemDictionaryShared::get_unregistered_class(specified_supertype->name());
+  if (obstructor == nullptr) {
+    return; // No unregistered types with the same name have been loaded, i.e. no obstruction
+  }
+  // 'specified_supertype' is S1, 'obstructor' is S2 from the explanation above
+  ResourceMark rm;
+  THROW_MSG(vmSymbols::java_lang_UnsupportedOperationException(),
+            err_msg("%s (id %d) has super-type %s (id %d) obstructed by another class with the same name",
+                    _class_name, _id, specified_supertype->external_name(), specified_supertype_id));
+}
+
 // This function is used for loading classes for customized class loaders
 // during archive dumping.
 InstanceKlass* ClassListParser::load_class_from_source(Symbol* class_name, TRAPS) {
@@ -514,13 +548,37 @@ InstanceKlass* ClassListParser::load_class_from_source(Symbol* class_name, TRAPS
   }
 
   ResourceMark rm;
-  char * source_path = os::strdup_check_oom(ClassLoader::uri_to_path(_source));
+  InstanceKlass* specified_super = lookup_class_by_id(_super);
+  GrowableArray<InstanceKlass*> specified_interfaces = get_specified_interfaces();
+  // Obstruction must be checked before the class loading attempt because it may
+  // cause class loading errors (JVMS 5.3.5.3-5.3.5.4)
+  check_supertype_obstruction(_super, specified_super, CHECK_NULL);
+  for (int i = 0; i < _interfaces->length(); i++) {
+    check_supertype_obstruction(_interfaces->at(i), specified_interfaces.at(i), CHECK_NULL);
+  }
+
+  const char* source_path = ClassLoader::uri_to_path(_source);
   InstanceKlass* k = UnregisteredClasses::load_class(class_name, source_path, CHECK_NULL);
+
+  if (k->java_super() != specified_super) {
+    error("The specified super class %s (id %d) does not match actual super class %s",
+          specified_super->external_name(), _super,
+          k->java_super()->external_name());
+  }
   if (k->local_interfaces()->length() != _interfaces->length()) {
     print_specified_interfaces();
     print_actual_interfaces(k);
     error("The number of interfaces (%d) specified in class list does not match the class file (%d)",
           _interfaces->length(), k->local_interfaces()->length());
+  }
+  for (int i = 0; i < _interfaces->length(); i++) {
+    InstanceKlass* specified_interface = specified_interfaces.at(i);
+    if (!k->local_interfaces()->contains(specified_interface)) {
+      print_specified_interfaces();
+      print_actual_interfaces(k);
+      error("Specified interface %s (id %d) is not directly implemented",
+            specified_interface->external_name(), _interfaces->at(i));
+      }
   }
 
   assert(k->is_shared_unregistered_class(), "must be");
@@ -599,7 +657,7 @@ void ClassListParser::resolve_indy(JavaThread* current, Symbol* class_name_symbo
 }
 
 void ClassListParser::resolve_indy_impl(Symbol* class_name_symbol, TRAPS) {
-  if (CDSConfig::is_dumping_invokedynamic()) {
+  if (CDSConfig::is_dumping_method_handles()) {
     // The CP entry for the invokedynamic instruction will be resolved.
     // No need to do the following.
     return;
@@ -629,7 +687,7 @@ void ClassListParser::resolve_indy_impl(Symbol* class_name_symbol, TRAPS) {
       constantPoolHandle pool(THREAD, cp);
       BootstrapInfo bootstrap_specifier(pool, pool_index, indy_index);
       Handle bsm = bootstrap_specifier.resolve_bsm(CHECK);
-      if (!SystemDictionaryShared::is_supported_invokedynamic(&bootstrap_specifier)) {
+      if (!LambdaProxyClassDictionary::is_supported_invokedynamic(&bootstrap_specifier)) {
         log_debug(cds, lambda)("is_supported_invokedynamic check failed for cp_index %d", pool_index);
         continue;
       }
@@ -735,49 +793,6 @@ InstanceKlass* ClassListParser::lookup_class_by_id(int id) {
   return *klass_ptr;
 }
 
-
-InstanceKlass* ClassListParser::lookup_super_for_current_class(Symbol* super_name) {
-  if (!is_loading_from_source()) {
-    return nullptr;
-  }
-
-  InstanceKlass* k = lookup_class_by_id(super());
-  if (super_name != k->name()) {
-    error("The specified super class %s (id %d) does not match actual super class %s",
-          k->name()->as_klass_external_name(), super(),
-          super_name->as_klass_external_name());
-  }
-  return k;
-}
-
-InstanceKlass* ClassListParser::lookup_interface_for_current_class(Symbol* interface_name) {
-  if (!is_loading_from_source()) {
-    return nullptr;
-  }
-
-  const int n = _interfaces->length();
-  if (n == 0) {
-    error("Class %s implements the interface %s, but no interface has been specified in the input line",
-          _class_name, interface_name->as_klass_external_name());
-    ShouldNotReachHere();
-  }
-
-  int i;
-  for (i=0; i<n; i++) {
-    InstanceKlass* k = lookup_class_by_id(_interfaces->at(i));
-    if (interface_name == k->name()) {
-      return k;
-    }
-  }
-
-  // interface_name is not specified by the "interfaces:" keyword.
-  print_specified_interfaces();
-  error("The interface %s implemented by class %s does not match any of the specified interface IDs",
-        interface_name->as_klass_external_name(), _class_name);
-  ShouldNotReachHere();
-  return nullptr;
-}
-
 InstanceKlass* ClassListParser::find_builtin_class_helper(JavaThread* current, Symbol* class_name_symbol, oop class_loader_oop) {
   Handle class_loader(current, class_loader_oop);
   return SystemDictionary::find_instance_klass(current, class_name_symbol, class_loader);
@@ -859,6 +874,14 @@ void ClassListParser::parse_constant_pool_tag() {
                                        cp_index, cp_tag.internal_name(), cp_tag.value());
       return;
     }
+  }
+
+  if (SystemDictionaryShared::should_be_excluded(ik)) {
+    if (log_is_enabled(Warning, cds, resolve)) {
+      ResourceMark rm;
+      log_warning(cds, resolve)("Cannot aot-resolve constants for %s because it is excluded", ik->external_name());
+    }
+    return;
   }
 
   if (preresolve_class) {
