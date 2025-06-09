@@ -680,6 +680,20 @@ var getJibProfilesProfiles = function (input, common, data) {
                 ["--with-jcov-input-jdk=" + input.get(name + ".jdk", "home_path")]);
         });
 
+    // ubsan profiles
+    [ "linux-aarch64", "linux-x64", "macosx-x64", "macosx-aarch64", "windows-x64" ]
+        .forEach(function (name) {
+            var ubsanName = name + "-ubsan";
+            profiles[ubsanName] = clone(common.main_profile_base);
+            profiles[ubsanName].target_os = profiles[name].target_os
+            profiles[ubsanName].target_cpu = profiles[name].target_cpu
+            profiles[ubsanName].configure_args = concat(profiles[ubsanName].configure_args,
+                ["--enable-ubsan"]);
+           profiles[ubsanName].dependencies = concat(profiles[ubsanName].dependencies,
+                [ name + ".jdk", "devkit" ]);
+        });
+
+
     // Define artifacts for profiles
     var artifactData = {
         "linux-x64": {
@@ -922,7 +936,41 @@ var getJibProfilesProfiles = function (input, common, data) {
             };
     });
 
-    // Profiles used to run tests.
+    // Artifacts of gcov (native-code-coverage) profiles
+    [ "linux-aarch64", "linux-x64", "macosx-x64", "macosx-aarch64", "windows-x64" ].forEach(function (name) {
+        var o = artifactData[name]
+        var pf = o.platform
+        var jdk_subdir = (o.jdk_subdir != null ? o.jdk_subdir : "jdk-" + data.version);
+        var jdk_suffix = (o.jdk_suffix != null ? o.jdk_suffix : "tar.gz");
+        var ubsanName = name + "-ubsan";
+        profiles[ubsanName].artifacts = {
+            jdk: {
+                local: "bundles/\\(jdk.*bin." + jdk_suffix + "\\)",
+                remote: [
+                    "bundles/" + pf + "/jdk-" + data.version + "_" + pf + "_bin-ubsan." + jdk_suffix,
+                ],
+                subdir: jdk_subdir,
+                exploded: "images/jdk",
+            },
+            test: {
+                    local: "bundles/\\(jdk.*bin-tests.tar.gz\\)",
+                    remote: [
+                        "bundles/" + pf + "/jdk-" + data.version + "_" + pf + "_bin-ubsan-tests.tar.gz",
+                    ],
+                    exploded: "images/test"
+            },
+            jdk_symbols: {
+                    local: "bundles/\\(jdk.*bin-symbols.tar.gz\\)",
+                    remote: [
+                        "bundles/" + pf + "/jdk-" + data.version + "_" + pf + "_bin-ubsan-symbols.tar.gz",
+                    ],
+                    subdir: jdk_subdir,
+                    exploded: "images/jdk"
+                },
+            };
+    });
+
+   // Profiles used to run tests.
     var testOnlyProfiles = {
         "run-test": {
             target_os: input.build_os,
