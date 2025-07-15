@@ -79,6 +79,12 @@ typedef struct {
 
 ModuleData *mdata;
 
+typedef struct {
+  jvmtiEnv *jvmti;
+  FILE* log_file;
+} GlobalData;
+
+GlobalData * gdata;
 // uncomment to enable verbose logginge
 // #define DEBUG_ENABLED
 
@@ -95,8 +101,8 @@ debug(const char* format, ...) {
   vsnprintf(dest, MESSAGE_LIMIT, format, argptr);
   va_end(argptr);
   printf("%s\n", dest);
-// fprintf(gdata->log_file, "%s\n", dest);
-//  fflush(gdata->log_file);
+  fprintf(gdata->log_file, "%s\n", dest);
+  fflush(gdata->log_file);
 #endif
 }
 
@@ -121,13 +127,6 @@ get_field_id(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
   check_jni_exception(env, message);
   return fid;
 }
-
-typedef struct {
-  jvmtiEnv *jvmti;
-  FILE* log_file;
-} GlobalData;
-
-GlobalData * gdata;
 
 jvmtiEnv*
 get_jvmti() {
@@ -209,6 +208,9 @@ trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   debug("In stack_trace: %p", thread);
   err =jvmti->GetStackTrace(thread, 0, 5,
                                 frames, &count);
+  if (err == JVMTI_ERROR_THREAD_NOT_ALIVE) {
+    return;
+  }
   check_jvmti_error(err, "GetStackTrace");
 
   debug("Stack depth: %d", count);
@@ -313,6 +315,10 @@ inspect_all_threads(jvmtiEnv *jvmti, JNIEnv *jni) {
       // TODO check if inspection of JFR threads might cause deadlock
       if (strstr(info.name, JVMTI_PREFIX) == NULL && strstr(info.name, "JFR") == NULL) {
         thread = threads[t];
+        trace_stack(jvmti, jni, thread);
+
+        // TODO enable in debugger version
+        /*
         debug("Inspect: Trying to suspend thread %s", info.name);
         err =jvmti->SuspendThread(thread);
         if (err != JVMTI_ERROR_THREAD_NOT_ALIVE) {
@@ -326,6 +332,7 @@ inspect_all_threads(jvmtiEnv *jvmti, JNIEnv *jni) {
         } else {
           debug("Inspect:  thread %s is not alive. Skipping.", info.name);
         }
+        */
       }
       deallocate(jvmti, jni, info.name);
       jni->DeleteLocalRef(info.thread_group);
@@ -341,6 +348,7 @@ agent_debugger(jvmtiEnv *jvmti, JNIEnv *env, void *p) {
   while (!should_stop(&mdata->agent_request_stop, &mdata->agent)) {
     raw_monitor_enter(mdata->debugger_lock);
     inspect_all_threads(jvmti, env);
+    sleep_ms(100);
     raw_monitor_exit(mdata->debugger_lock);
   }
   debug("Debugger: Thread finished.");
@@ -352,10 +360,10 @@ agent_debugger(jvmtiEnv *jvmti, JNIEnv *env, void *p) {
  */
 static void
 register_event(jlong *event) {
-  raw_monitor_enter(mdata->events_lock);
+//  raw_monitor_enter(mdata->events_lock);
   (*event)++;
-  debug("event \n");
-  raw_monitor_exit(mdata->events_lock);
+//  debug("event %d\n", (event - &mdata->cbBreakpoint) );
+//  raw_monitor_exit(mdata->events_lock);
 }
 
 static jlong
@@ -412,6 +420,12 @@ cbClassFileLoadHook(jvmtiEnv *jvmti, JNIEnv* env,
                     const char* name, jobject protection_domain,
                     jint class_data_len, const unsigned char *class_data,
                     jint *new_class_data_len, unsigned char **new_class_data) {
+  unsigned char* new_class_data_copy = (unsigned char*) malloc(class_data_len);
+  /* TODO uncomment for more stress
+  memcpy(new_class_data_copy, class_data, class_data_len);
+  *new_class_data_len = class_data_len;
+  *new_class_data = new_class_data_copy;
+  */
   register_event(&mdata->cbClassFileLoadHook);
 }
 
@@ -908,6 +922,18 @@ void get_capabilities(void) {
   jvmtiCapabilities capabilities;
   (void) memset(&capabilities, 0, sizeof (capabilities));
   err = get_jvmti()->GetPotentialCapabilities(&capabilities);
+
+  // TODO enable in debuggere version of agent
+
+  //init_always_solo_capabilities
+  capabilities.can_suspend = false;
+  capabilities.can_generate_sampled_object_alloc_events = false;
+
+  // onload_solo
+  capabilities.can_generate_breakpoint_events = false;
+  capabilities.can_generate_field_access_events = false;
+  capabilities.can_generate_field_modification_events = false;
+
   check_jvmti_error(err, "GetPotentialCapabilities");
   err = get_jvmti()->AddCapabilities(&capabilities);
   check_jvmti_error(err, "AddCapabilities");
@@ -921,17 +947,21 @@ mdata_init() {
   data.agent_request_stop = JNI_FALSE;
 
   /* Set jvmti stress properties */
-  data.debugger_interval = 1000;
+  data.debugger_interval = 100;
   data.heap_sampling_interval = 1000;
-  data.frequent_events_interval = 100;
+  data.frequent_events_interval = 10;
   data.debugger_watch_methods = 100;
   data.is_debugger_enabled = true;
   data.are_events_enabled = true;
 
   /* Set array of excluded events if needed */
-  //data,events_excluded_size = 0;
-  // data.events_excluded = static_cast<int *>(malloc(sizeof(jint) * mdata->events_excluded_size));
-  // data.events_excluded[0] = 74;
+  data.events_excluded_size = 4;
+  data.events_excluded = new jint[] {
+    JVMTI_EVENT_BREAKPOINT,
+    JVMTI_EVENT_FIELD_ACCESS,
+    JVMTI_EVENT_FIELD_MODIFICATION,
+    JVMTI_EVENT_SAMPLED_OBJECT_ALLOC,
+  };
 
 
   return &data;
