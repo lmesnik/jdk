@@ -9,7 +9,6 @@
 #include "jvmti_common.hpp"
 
 
-// This prefix is used to select suspending threads by tracer/debugger
 #define JVMTI_PREFIX "Jvmti"
 
 #define JVMTI_AGENT_NAME "JvmtiStressAgent"
@@ -25,9 +24,8 @@ typedef struct {
   volatile jboolean agent;
 
 
-  /* Settings from kitchensink properties file */
-  jboolean is_debugger_enabled;
-  jlong debugger_interval;
+  jboolean is_agent_enabled;
+  jlong is_debugger_enabled;
   jboolean are_events_enabled;
   jint heap_sampling_interval;
   jint frequent_events_interval;
@@ -37,6 +35,8 @@ typedef struct {
 
   /* Event statistics */
   jrawMonitorID events_lock; /* Monitor to register events and reset/read them */
+
+  /* The counters are racy intentionally to avoid synchronization */
   jlong cbBreakpoint;
   jlong cbClassFileLoadHook;
   jlong cbClassLoad;
@@ -65,6 +65,8 @@ typedef struct {
   jlong cbSingleStep;
   jlong cbThreadEnd;
   jlong cbThreadStart;
+  jlong cbVirtualThreadEnd;
+  jlong cbVirtualThreadStart;
   jlong cbVMDeath;
   jlong cbVMInit;
   jlong cbVMObjectAlloc;
@@ -251,20 +253,6 @@ trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   debug("---- End of stack inspection %d -----", count);
 }
 
-static char*
-get_top_method_name(jvmtiEnv *jvmti, jthread thread) {
-  jvmtiFrameInfo frames[1];
-  jint count;
-  char *methodName = NULL;
-  jvmtiError err =jvmti->GetStackTrace(thread, 0, 1, frames, &count);
-  check_jvmti_error(err, "GetStackTrace");
-
-  err =jvmti->GetMethodName(frames[0].method, &methodName, NULL, NULL);
-  check_jvmti_error(err, "GetMethodName");
-
-  return methodName;
-}
-
 const char*
 bool2str(const jboolean val) {
   return val == JNI_FALSE ? "JNI_FALSE" : "JNI_TRUE";
@@ -279,8 +267,6 @@ void
 raw_monitor_exit(jrawMonitorID m) {
   get_jvmti()->RawMonitorExit(m);
 }
-
-
 
 static jboolean
 should_stop(const volatile jboolean *stop, volatile jboolean *finished) {
@@ -343,7 +329,7 @@ inspect_all_threads(jvmtiEnv *jvmti, JNIEnv *jni) {
 }
 
 static void JNICALL
-agent_debugger(jvmtiEnv *jvmti, JNIEnv *env, void *p) {
+stress_agent(jvmtiEnv *jvmti, JNIEnv *env, void *p) {
   debug("Debugger: Thread started.");
   while (!should_stop(&mdata->agent_request_stop, &mdata->agent)) {
     raw_monitor_enter(mdata->debugger_lock);
@@ -377,13 +363,13 @@ get_event_count(jlong *event) {
 
 
 static void JNICALL
-cbVMInit(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
+cbVMInit(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbVMInit);
-  create_agent_thread(env, JVMTI_AGENT_NAME, &agent_debugger);
+  create_agent_thread(jni, JVMTI_AGENT_NAME, &stress_agent);
 }
 
 static void JNICALL
-cbVMDeath(jvmtiEnv *jvmti, JNIEnv *env) {
+cbVMDeath(jvmtiEnv *jvmti, JNIEnv *jni) {
   register_event(&mdata->cbVMDeath);
   jboolean finished = JNI_FALSE;
   raw_monitor_enter(mdata->finished_lock);
@@ -402,6 +388,9 @@ cbVMDeath(jvmtiEnv *jvmti, JNIEnv *env) {
 
   debug("Native agent stopped");
 
+  destroy_raw_monitor(jvmti, jni, mdata->debugger_lock);
+  destroy_raw_monitor(jvmti, jni, mdata->events_lock);
+  destroy_raw_monitor(jvmti, jni, mdata->finished_lock);
 }
 
 static void JNICALL
@@ -411,6 +400,16 @@ cbThreadStart(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
 
 static void JNICALL
 cbThreadEnd(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
+  register_event(&mdata->cbThreadEnd);
+}
+
+static void JNICALL
+cbVirtualThreadStart(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
+  register_event(&mdata->cbThreadStart);
+}
+
+static void JNICALL
+cbVirtualThreadEnd(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
   register_event(&mdata->cbThreadEnd);
 }
 
@@ -743,6 +742,8 @@ set_callbacks(jboolean on) {
   callbacks.SingleStep = &cbSingleStep;
   callbacks.ThreadEnd = &cbThreadEnd;
   callbacks.ThreadStart = &cbThreadStart;
+  callbacks.VirtualThreadEnd = &cbVirtualThreadEnd;
+  callbacks.VirtualThreadStart = &cbVirtualThreadStart;
   callbacks.VMDeath = &cbVMDeath;
   callbacks.VMInit = &cbVMInit;
   callbacks.VMObjectAlloc = &cbVMObjectAlloc;
@@ -865,10 +866,10 @@ Java_startIteration(JNIEnv *env, jobject _this) {
   err = get_jvmti()->SetHeapSamplingInterval(mdata->heap_sampling_interval);
   check_jvmti_error(err, "SetHeapSamplingInterval");
 
-  if (mdata->is_debugger_enabled)  {
+  if (mdata->is_agent_enabled)  {
     mdata->agent = JNI_FALSE;
     mdata->agent_request_stop = JNI_FALSE;
-    create_agent_thread(env, JVMTI_AGENT_NAME, &agent_debugger);
+    create_agent_thread(env, JVMTI_AGENT_NAME, &stress_agent);
   }
 
 }
@@ -886,7 +887,7 @@ Java_finishIteration(JNIEnv *env, jobject _this) {
   jclass kls;
   jint obj_count;
 
-  if (mdata->is_debugger_enabled)  {
+  if (mdata->is_agent_enabled)  {
     raw_monitor_enter(mdata->finished_lock);
     mdata->agent_request_stop = JNI_TRUE;
     raw_monitor_exit(mdata->finished_lock);
@@ -929,10 +930,15 @@ void get_capabilities(void) {
   capabilities.can_suspend = false;
   capabilities.can_generate_sampled_object_alloc_events = false;
 
+  capabilities.can_generate_early_vmstart = false;
+
   // onload_solo
   capabilities.can_generate_breakpoint_events = false;
   capabilities.can_generate_field_access_events = false;
   capabilities.can_generate_field_modification_events = false;
+
+  // TODO there is a
+  capabilities.can_generate_early_vmstart = false;
 
   check_jvmti_error(err, "GetPotentialCapabilities");
   err = get_jvmti()->AddCapabilities(&capabilities);
@@ -947,12 +953,15 @@ mdata_init() {
   data.agent_request_stop = JNI_FALSE;
 
   /* Set jvmti stress properties */
-  data.debugger_interval = 100;
   data.heap_sampling_interval = 1000;
   data.frequent_events_interval = 10;
   data.debugger_watch_methods = 100;
-  data.is_debugger_enabled = true;
-  data.are_events_enabled = true;
+  data.is_agent_enabled = JNI_TRUE;
+  data.are_events_enabled = JNI_TRUE;
+  data.is_debugger_enabled = JNI_FALSE;
+
+  data.events_excluded_size = 0;
+  data.events_excluded =  new jint[0];
 
   /* Set array of excluded events if needed */
   data.events_excluded_size = 4;
@@ -996,8 +1005,5 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved) {
 
 JNIEXPORT void JNICALL
 Agent_OnUnload(JavaVM *vm) {
-//   destroy_raw_monitor(get_jvmti(), mdata->finished_lock);
-  //destroy_raw_monitor(mdata->events_lock);
-  //destroy_raw_monitor(mdata->debugger_lock);
-  //gdata_close();
+  gdata_close();
 }

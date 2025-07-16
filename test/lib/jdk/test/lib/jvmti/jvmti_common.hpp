@@ -125,6 +125,7 @@ char* julong_to_string(julong value, char *string) {
 
 static void
 fatal(JNIEnv* jni, const char* msg) {
+  LOG("Fatal: %s\n", msg);
   jni->FatalError(msg);
 }
 
