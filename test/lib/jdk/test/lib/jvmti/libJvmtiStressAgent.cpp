@@ -39,9 +39,17 @@ typedef struct {
   volatile jboolean is_agent_finished;
 
   /* Some configurable settings */
+
+  // If agent enabled or not.
   jboolean is_agent_enabled;
-  jlong is_debugger_enabled;
+
+  // If events testing is enabled.
   jboolean are_events_enabled;
+
+  // If debugging functionality could be used.
+  // Not compatible with debugger tests.
+  jlong is_debugger_enabled;
+
   jint heap_sampling_interval;
   jint frequent_events_interval;
 
@@ -96,7 +104,7 @@ typedef struct {
 
 ModuleData *mdata;
 static ModuleData*
-mdata_init(jvmtiEnv *jvmti) {
+mdata_init() {
   static ModuleData data;
   (void) memset(&data, 0, sizeof (ModuleData));
 
@@ -112,17 +120,19 @@ mdata_init(jvmtiEnv *jvmti) {
   data.are_events_enabled = JNI_TRUE;
   data.is_debugger_enabled = JNI_TRUE;
 
-  data.events_excluded_size = 0;
-  data.events_excluded =  new jint[0];
 
-  /* Set array of excluded events if needed */
-  data.events_excluded_size = 4;
-  data.events_excluded = new jint[] {
-    JVMTI_EVENT_BREAKPOINT,
-    JVMTI_EVENT_FIELD_ACCESS,
-    JVMTI_EVENT_FIELD_MODIFICATION,
-    JVMTI_EVENT_SAMPLED_OBJECT_ALLOC,
-  };
+  if (data.is_debugger_enabled) {
+    data.events_excluded_size = 0;
+    data.events_excluded =  new jint[0];
+  } else {
+    data.events_excluded_size = 4;
+    data.events_excluded = new jint[] {
+      JVMTI_EVENT_BREAKPOINT,
+      JVMTI_EVENT_FIELD_ACCESS,
+      JVMTI_EVENT_FIELD_MODIFICATION,
+      JVMTI_EVENT_SAMPLED_OBJECT_ALLOC,
+    };
+}
 
 
   return &data;
@@ -426,17 +436,22 @@ stress_agent(jvmtiEnv *jvmti, JNIEnv *jni, void *p) {
     jint obj_count;
     // Iterate through heap and get some statistics
     kls = find_class(jni, "java/lang/String");
-    //obj_count = get_heap_info(jni, kls);
+    obj_count = get_heap_info(jvmti, jni, kls);
+    debug("Debugger: Heap info: %d", obj_count);
 
-    //err = jvmti->SetHeapSamplingInterval(0);
+    err = jvmti->SetHeapSamplingInterval(mdata->heap_sampling_interval);
     check_jvmti_error(err, "SetHeapSamplingInterval");
 
     inspect_all_threads(jvmti, jni);
 
     sleep_ms(100);
 
-    // err = jvmti->SetHeapSamplingInterval(mdata->heap_sampling_interval);
+    err = jvmti->SetHeapSamplingInterval(0);
     check_jvmti_error(err, "SetHeapSamplingInterval");
+    enable_frequent_events(jvmti);
+    sleep_ms(10);
+    disable_all_events(jvmti);
+    sleep_ms(100);
   }
   debug("Debugger: Thread finished.");
 }
@@ -451,7 +466,7 @@ stress_agent(jvmtiEnv *jvmti, JNIEnv *jni, void *p) {
 static void
 register_event(jlong *event) {
   (*event)++;
- // debug("event %d\n", (event - &mdata->cbBreakpoint));
+  debug("event %d\n", (event - &mdata->cbBreakpoint));
 }
 
 static void JNICALL
@@ -804,7 +819,7 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved) {
     return JNI_ERR;
   }
 
-  mdata = mdata_init(jvmti);
+  mdata = mdata_init();
 
   get_capabilities(jvmti);
 
