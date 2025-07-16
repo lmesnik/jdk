@@ -119,14 +119,14 @@ check_jni_exception(JNIEnv *jni, const char *message) {
 
 void create_agent_thread(JNIEnv* env, const char *name, jvmtiStartFunction func);
 /* JNI helpers with Exception check */
-jclass find_class(JNIEnv *env, const char *name);
+jclass find_class(JNIEnv *jni, const char *name);
 
 jfieldID
-get_field_id(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
+get_field_id(JNIEnv *jni, jclass clazz, const char *name, const char *sig) {
   char message[MESSAGE_LIMIT];
-  jfieldID fid = env->GetFieldID(clazz, name, sig);
+  jfieldID fid = jni->GetFieldID(clazz, name, sig);
   snprintf(message, MESSAGE_LIMIT, "Failed to find field %s.", name);
-  check_jni_exception(env, message);
+  check_jni_exception(jni, message);
   return fid;
 }
 
@@ -135,12 +135,12 @@ get_jvmti() {
   return gdata->jvmti;
 }
 void
-gdata_init(jvmtiEnv *env) {
+gdata_init(jvmtiEnv *jvmti) {
   static GlobalData data;
   /* Create initial default values */
   (void) memset(&data, 0, sizeof (GlobalData));
   data.log_file = fopen("JvmtiStressModuleNative.out", "w");
-  data.jvmti = env;
+  data.jvmti = jvmti;
   gdata = &data;
 }
 
@@ -150,50 +150,50 @@ gdata_close() {
 }
 
 void
-set_long_field(JNIEnv *env, jclass cls, jobject obj, const char *fld_name, jlong value) {
+set_long_field(JNIEnv *jni, jclass cls, jobject obj, const char *fld_name, jlong value) {
   char message[MESSAGE_LIMIT];
-  jfieldID fld = get_field_id(env, cls, fld_name, "J");
-  env->SetLongField(obj, fld, value);
+  jfieldID fld = get_field_id(jni, cls, fld_name, "J");
+  jni->SetLongField(obj, fld, value);
   snprintf(message, MESSAGE_LIMIT, "Failed to set long field %s.", fld_name);
-  check_jni_exception(env, message);
+  check_jni_exception(jni, message);
 }
 
 jclass
-find_class(JNIEnv *env, const char *name) {
+find_class(JNIEnv *jni, const char *name) {
   char message[MESSAGE_LIMIT];
-  jclass clazz = env->FindClass(name);
+  jclass clazz = jni->FindClass(name);
   snprintf(message, MESSAGE_LIMIT, "Failed to find class %s.", name);
-  check_jni_exception(env, message);
+  check_jni_exception(jni, message);
   return clazz;
 }
 
 jmethodID
-get_method_id(JNIEnv *env, jclass clazz, const char *name, const char *sig) {
+get_method_id(JNIEnv *jni, jclass clazz, const char *name, const char *sig) {
   char message[MESSAGE_LIMIT];
-  jmethodID method = env->GetMethodID(clazz, name, sig);
+  jmethodID method = jni->GetMethodID(clazz, name, sig);
   snprintf(message, MESSAGE_LIMIT, "Failed to find method %s.", name);
-  check_jni_exception(env, message);
+  check_jni_exception(jni, message);
   return method;
 }
 
 void
-create_agent_thread(JNIEnv *env, const char *name, jvmtiStartFunction func) {
+create_agent_thread(JNIEnv *jni, const char *name, jvmtiStartFunction func) {
   jclass clazz = nullptr;
   jmethodID thread_ctor = nullptr;
   jthread thread = nullptr;
   jstring name_utf = nullptr;
   jvmtiError err = JVMTI_ERROR_NONE;
 
-  check_jni_exception(env, "JNIException before creating Agent Thread.");
-  clazz = find_class(env, "java/lang/Thread");
-  thread_ctor = get_method_id(env, clazz, "<init>",
+  check_jni_exception(jni, "JNIException before creating Agent Thread.");
+  clazz = find_class(jni, "java/lang/Thread");
+  thread_ctor = get_method_id(jni, clazz, "<init>",
                                     "(Ljava/lang/String;)V");
 
-  name_utf = env->NewStringUTF(name);
-  check_jni_exception(env, "Error creating utf name of thread.");
+  name_utf = jni->NewStringUTF(name);
+  check_jni_exception(jni, "Error creating utf name of thread.");
 
-  thread = env->NewObject(clazz, thread_ctor, name_utf);
-  check_jni_exception(env, "Error during instantiation of Thread object.");
+  thread = jni->NewObject(clazz, thread_ctor, name_utf);
+  check_jni_exception(jni, "Error during instantiation of Thread object.");
   err = gdata->jvmti->RunAgentThread(
                      thread, func, NULL, JVMTI_THREAD_NORM_PRIORITY);
   check_jvmti_error(err, "RunAgentThread");
@@ -329,11 +329,11 @@ inspect_all_threads(jvmtiEnv *jvmti, JNIEnv *jni) {
 }
 
 static void JNICALL
-stress_agent(jvmtiEnv *jvmti, JNIEnv *env, void *p) {
+stress_agent(jvmtiEnv *jvmti, JNIEnv *jni, void *p) {
   debug("Debugger: Thread started.");
   while (!should_stop(&mdata->agent_request_stop, &mdata->agent)) {
     raw_monitor_enter(mdata->debugger_lock);
-    inspect_all_threads(jvmti, env);
+    inspect_all_threads(jvmti, jni);
     sleep_ms(100);
     raw_monitor_exit(mdata->debugger_lock);
   }
@@ -394,27 +394,27 @@ cbVMDeath(jvmtiEnv *jvmti, JNIEnv *jni) {
 }
 
 static void JNICALL
-cbThreadStart(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
+cbThreadStart(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbThreadStart);
 }
 
 static void JNICALL
-cbThreadEnd(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
+cbThreadEnd(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbThreadEnd);
 }
 
 static void JNICALL
-cbVirtualThreadStart(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
+cbVirtualThreadStart(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbThreadStart);
 }
 
 static void JNICALL
-cbVirtualThreadEnd(jvmtiEnv *jvmti, JNIEnv *env, jthread thread) {
+cbVirtualThreadEnd(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbThreadEnd);
 }
 
 static void JNICALL
-cbClassFileLoadHook(jvmtiEnv *jvmti, JNIEnv* env,
+cbClassFileLoadHook(jvmtiEnv *jvmti, JNIEnv* jni,
                     jclass class_being_redefined, jobject loader,
                     const char* name, jobject protection_domain,
                     jint class_data_len, const unsigned char *class_data,
@@ -429,12 +429,12 @@ cbClassFileLoadHook(jvmtiEnv *jvmti, JNIEnv* env,
 }
 
 static void JNICALL
-cbClassLoad(jvmtiEnv *jvmti, JNIEnv *env, jthread thread, jclass klass) {
+cbClassLoad(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread, jclass klass) {
   register_event(&mdata->cbClassLoad);
 }
 
 static void JNICALL
-cbClassPrepare(jvmtiEnv *jvmti, JNIEnv *env, jthread thread, jclass klass) {
+cbClassPrepare(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread, jclass klass) {
   register_event(&mdata->cbClassPrepare);
 }
 
@@ -456,32 +456,32 @@ cbException(jvmtiEnv *jvmti,
 }
 
 static void JNICALL
-cbExceptionCatch(jvmtiEnv *jvmti, JNIEnv *env,
+cbExceptionCatch(jvmtiEnv *jvmti, JNIEnv *jni,
                  jthread thread, jmethodID method, jlocation location,
                  jobject exception) {
   register_event(&mdata->cbExceptionCatch);
 }
 
 static void JNICALL
-cbMonitorWait(jvmtiEnv *jvmti, JNIEnv *env,
+cbMonitorWait(jvmtiEnv *jvmti, JNIEnv *jni,
               jthread thread, jobject object, jlong timeout) {
   register_event(&mdata->cbMonitorWait);
 }
 
 static void JNICALL
-cbMonitorWaited(jvmtiEnv *jvmti, JNIEnv *env,
+cbMonitorWaited(jvmtiEnv *jvmti, JNIEnv *jni,
                 jthread thread, jobject object, jboolean timed_out) {
   register_event(&mdata->cbMonitorWaited);
 }
 
 static void JNICALL
-cbMonitorContendedEnter(jvmtiEnv *jvmti, JNIEnv *env,
+cbMonitorContendedEnter(jvmtiEnv *jvmti, JNIEnv *jni,
                         jthread thread, jobject object) {
   register_event(&mdata->cbMonitorContendedEnter);
 }
 
 static void JNICALL
-cbMonitorContendedEntered(jvmtiEnv *jvmti, JNIEnv* env,
+cbMonitorContendedEntered(jvmtiEnv *jvmti, JNIEnv* jni,
                           jthread thread, jobject object) {
   register_event(&mdata->cbMonitorContendedEntered);
 }
@@ -760,7 +760,7 @@ heap_iteration_callback(jlong class_tag, jlong size, jlong* tag_ptr, jint length
 }
 
 static jint
-get_heap_info(JNIEnv *env, jclass klass) {
+get_heap_info(JNIEnv *jni, jclass klass) {
   jvmtiError err = JVMTI_ERROR_NONE;
   int count = 0;
   jvmtiHeapCallbacks callbacks;
@@ -776,7 +776,7 @@ get_heap_info(JNIEnv *env, jclass klass) {
  * Also it set the JVMTI callback functions and setup event modes.
  */
 JNIEXPORT jboolean JNICALL
-Java_JvmtiStressAgent_initNative(JNIEnv *env,
+Java_JvmtiStressAgent_initNative(JNIEnv *jni,
                   jobject _this,
                   jobject settings) {
 
@@ -794,7 +794,7 @@ Java_JvmtiStressAgent_initNative(JNIEnv *env,
  * Method waits until jvmti threads stop so they don't generate errors after shutdown.
  */
 JNIEXPORT jboolean JNICALL
-Java_JvmtiStressAgent_shutdownNative(JNIEnv *env, jobject _this) {
+Java_JvmtiStressAgent_shutdownNative(JNIEnv *jni, jobject _this) {
   jboolean finished = JNI_FALSE;
   raw_monitor_enter(mdata->finished_lock);
   mdata->agent_request_stop = JNI_TRUE;
@@ -819,7 +819,7 @@ Java_JvmtiStressAgent_shutdownNative(JNIEnv *env, jobject _this) {
  * It is used to reset all iteration specific data.
  */
 JNIEXPORT void JNICALL
-Java_startIteration(JNIEnv *env, jobject _this) {
+Java_startIteration(JNIEnv *jni, jobject _this) {
   jvmtiError err = JVMTI_ERROR_NONE;
   if (mdata->are_events_enabled) {
     disable_all_events();
@@ -869,7 +869,7 @@ Java_startIteration(JNIEnv *env, jobject _this) {
   if (mdata->is_agent_enabled)  {
     mdata->agent = JNI_FALSE;
     mdata->agent_request_stop = JNI_FALSE;
-    create_agent_thread(env, JVMTI_AGENT_NAME, &stress_agent);
+    create_agent_thread(jni, JVMTI_AGENT_NAME, &stress_agent);
   }
 
 }
@@ -879,7 +879,7 @@ Java_startIteration(JNIEnv *env, jobject _this) {
  * It is used to collect test statistics per iteration for later analysis.
  */
 JNIEXPORT jobject JNICALL
-Java_finishIteration(JNIEnv *env, jobject _this) {
+Java_finishIteration(JNIEnv *jni, jobject _this) {
   jvmtiError err = JVMTI_ERROR_NONE;
   jclass cls;
   jmethodID constructor;
@@ -893,9 +893,9 @@ Java_finishIteration(JNIEnv *env, jobject _this) {
     raw_monitor_exit(mdata->finished_lock);
   }
 
-  cls = find_class(env, JVMTI_STATISTICS);
-  constructor = find_method(get_jvmti(), env, cls, "<init>"/*, "()V"*/);
-  obj = env->NewObject(cls, constructor);
+  cls = find_class(jni, JVMTI_STATISTICS);
+  constructor = find_method(get_jvmti(), jni, cls, "<init>"/*, "()V"*/);
+  obj = jni->NewObject(cls, constructor);
   if (mdata->are_events_enabled) {
     if (mdata->frequent_events_interval != 0) {
       enable_frequent_events();
@@ -908,9 +908,9 @@ Java_finishIteration(JNIEnv *env, jobject _this) {
 
 
   // Iterate through heap and get some statistics
-  kls = find_class(env, "java/lang/String");
-  obj_count = get_heap_info(env, kls);
-  obj_count = get_heap_info(env, NULL);
+  kls = find_class(jni, "java/lang/String");
+  obj_count = get_heap_info(jni, kls);
+  obj_count = get_heap_info(jni, NULL);
 
   err = get_jvmti()->SetHeapSamplingInterval(0);
   check_jvmti_error(err, "SetHeapSamplingInterval");
