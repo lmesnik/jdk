@@ -715,6 +715,7 @@ JvmtiEventControllerPrivate::recompute_enabled() {
       case JVMTI_PHASE_DEAD:
         // If the VM is dying we can't execute VM ops
         break;
+      case JVMTI_PHASE_START:
       case JVMTI_PHASE_LIVE: {
         VM_ChangeSingleStep op((any_env_thread_enabled & SINGLE_STEP_BIT) != 0);
         VMThread::execute(&op);
