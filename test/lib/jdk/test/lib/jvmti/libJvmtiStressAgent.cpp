@@ -1,6 +1,24 @@
 /*
  * Copyright (c) 2018, 2025, Oracle and/or its affiliates. All rights reserved.
- * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+ *
+ * This code is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License version 2 only, as
+ * published by the Free Software Foundation.
+ *
+ * This code is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+ * version 2 for more details (a copy is included in the LICENSE file that
+ * accompanied this code).
+ *
+ * You should have received a copy of the GNU General Public License version
+ * 2 along with this work; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 #include <stddef.h>
@@ -9,27 +27,25 @@
 #include "jvmti_common.hpp"
 
 
-#define JVMTI_PREFIX "Jvmti"
 
 #define JVMTI_AGENT_NAME "JvmtiStressAgent"
 
-#define JVMTI_STATISTICS  "JvmtiStatistics"
 
 typedef struct {
-  volatile jboolean initialized;
 
-  /* Monitor and flags to synchronize job completion between jvmti agent and other parts.*/
+  /* Monitor and flags to synchronize agent completion.*/
   jrawMonitorID finished_lock;
   volatile jboolean agent_request_stop;
-  volatile jboolean agent;
+  volatile jboolean is_agent_finished;
 
-
+  /* Some configurable settings */
   jboolean is_agent_enabled;
   jlong is_debugger_enabled;
   jboolean are_events_enabled;
   jint heap_sampling_interval;
   jint frequent_events_interval;
-  jint debugger_watch_methods;
+
+  /* Excluded events */
   jint* events_excluded;
   jsize events_excluded_size;
 
@@ -75,20 +91,50 @@ typedef struct {
   jlong inspectedMethods;
   jlong inspectedVariables;
 
-  jrawMonitorID debugger_lock;
-
+  FILE* log_file;
 } ModuleData;
 
 ModuleData *mdata;
+static ModuleData*
+mdata_init(jvmtiEnv *jvmti) {
+  static ModuleData data;
+  (void) memset(&data, 0, sizeof (ModuleData));
 
-typedef struct {
-  jvmtiEnv *jvmti;
-  FILE* log_file;
-} GlobalData;
+  data.log_file = fopen("JvmtiStressAgent.out", "w");
 
-GlobalData * gdata;
-// uncomment to enable verbose logginge
-// #define DEBUG_ENABLED
+  data.agent_request_stop = JNI_FALSE;
+  data.is_agent_finished = JNI_FALSE;
+
+  /* Set jvmti stress properties */
+  data.heap_sampling_interval = 1000;
+  data.frequent_events_interval = 10;
+  data.is_agent_enabled = JNI_TRUE;
+  data.are_events_enabled = JNI_TRUE;
+  data.is_debugger_enabled = JNI_TRUE;
+
+  data.events_excluded_size = 0;
+  data.events_excluded =  new jint[0];
+
+  /* Set array of excluded events if needed */
+  data.events_excluded_size = 4;
+  data.events_excluded = new jint[] {
+    JVMTI_EVENT_BREAKPOINT,
+    JVMTI_EVENT_FIELD_ACCESS,
+    JVMTI_EVENT_FIELD_MODIFICATION,
+    JVMTI_EVENT_SAMPLED_OBJECT_ALLOC,
+  };
+
+
+  return &data;
+}
+
+void
+mdata_close(void) {
+  free(mdata->events_excluded);
+  fclose(mdata->log_file);
+}
+// uncomment to enable verbose logging
+#define DEBUG_ENABLED
 
 // Internal buffer length for all messages
 #define MESSAGE_LIMIT 16384
@@ -103,11 +149,12 @@ debug(const char* format, ...) {
   vsnprintf(dest, MESSAGE_LIMIT, format, argptr);
   va_end(argptr);
   printf("%s\n", dest);
-  fprintf(gdata->log_file, "%s\n", dest);
-  fflush(gdata->log_file);
+  fprintf(mdata->log_file, "%s\n", dest);
+  fflush(mdata->log_file);
 #endif
 }
 
+/* Some helper functions to start/stop jvmti stress agent */
 void
 check_jni_exception(JNIEnv *jni, const char *message) {
   jobject exception = jni->ExceptionOccurred();
@@ -115,47 +162,6 @@ check_jni_exception(JNIEnv *jni, const char *message) {
     jni->ExceptionDescribe();
     fatal(jni, message);
   }
-}
-
-void create_agent_thread(JNIEnv* env, const char *name, jvmtiStartFunction func);
-/* JNI helpers with Exception check */
-jclass find_class(JNIEnv *jni, const char *name);
-
-jfieldID
-get_field_id(JNIEnv *jni, jclass clazz, const char *name, const char *sig) {
-  char message[MESSAGE_LIMIT];
-  jfieldID fid = jni->GetFieldID(clazz, name, sig);
-  snprintf(message, MESSAGE_LIMIT, "Failed to find field %s.", name);
-  check_jni_exception(jni, message);
-  return fid;
-}
-
-jvmtiEnv*
-get_jvmti() {
-  return gdata->jvmti;
-}
-void
-gdata_init(jvmtiEnv *jvmti) {
-  static GlobalData data;
-  /* Create initial default values */
-  (void) memset(&data, 0, sizeof (GlobalData));
-  data.log_file = fopen("JvmtiStressModuleNative.out", "w");
-  data.jvmti = jvmti;
-  gdata = &data;
-}
-
-void
-gdata_close() {
-  fclose(gdata->log_file);
-}
-
-void
-set_long_field(JNIEnv *jni, jclass cls, jobject obj, const char *fld_name, jlong value) {
-  char message[MESSAGE_LIMIT];
-  jfieldID fld = get_field_id(jni, cls, fld_name, "J");
-  jni->SetLongField(obj, fld, value);
-  snprintf(message, MESSAGE_LIMIT, "Failed to set long field %s.", fld_name);
-  check_jni_exception(jni, message);
 }
 
 jclass
@@ -177,7 +183,7 @@ get_method_id(JNIEnv *jni, jclass clazz, const char *name, const char *sig) {
 }
 
 void
-create_agent_thread(JNIEnv *jni, const char *name, jvmtiStartFunction func) {
+create_agent_thread(jvmtiEnv *jvmti, JNIEnv *jni, const char *name, jvmtiStartFunction func) {
   jclass clazz = nullptr;
   jmethodID thread_ctor = nullptr;
   jthread thread = nullptr;
@@ -194,22 +200,46 @@ create_agent_thread(JNIEnv *jni, const char *name, jvmtiStartFunction func) {
 
   thread = jni->NewObject(clazz, thread_ctor, name_utf);
   check_jni_exception(jni, "Error during instantiation of Thread object.");
-  err = gdata->jvmti->RunAgentThread(
-                     thread, func, NULL, JVMTI_THREAD_NORM_PRIORITY);
-  check_jvmti_error(err, "RunAgentThread");
+  err = jvmti->RunAgentThread(
+                     thread, func, nullptr, JVMTI_THREAD_NORM_PRIORITY);
+  check_jvmti_status(jni, err, "RunAgentThread");
 }
+
+void
+stop_agent_thread(jvmtiEnv *jvmti, JNIEnv *jni) {
+  RawMonitorLocker rml(jvmti, jni, mdata->finished_lock);
+  mdata->agent_request_stop = JNI_TRUE;
+  while (!mdata->is_agent_finished) {
+    rml.wait(1000);
+  }
+  debug("Native agent stopped");
+}
+
+static jboolean
+should_stop(jvmtiEnv *jvmti, JNIEnv *jni ) {
+  jboolean should_stop = JNI_FALSE;
+  RawMonitorLocker rml(jvmti, jni, mdata->finished_lock);
+  should_stop = mdata->agent_request_stop;
+  if (should_stop == JNI_TRUE) {
+    fflush(stdout);
+    mdata->is_agent_finished = JNI_TRUE;
+    rml.notify_all();
+  }
+  return should_stop;
+}
+
+/*
+ * Agent stress functions.
+ */
 
 static void
 trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   jvmtiFrameInfo frames[5];
   jint count = 0;
-  jint entry_count = 0;
-  int frame_index = 0;
   jvmtiError err = JVMTI_ERROR_NONE;
 
   debug("In stack_trace: %p", thread);
-  err =jvmti->GetStackTrace(thread, 0, 5,
-                                frames, &count);
+  err =jvmti->GetStackTrace(thread, 0, 5, frames, &count);
   if (err == JVMTI_ERROR_THREAD_NOT_ALIVE) {
     return;
   }
@@ -217,12 +247,10 @@ trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
 
   debug("Stack depth: %d", count);
 
-  for (frame_index = 0; frame_index < count; frame_index++) {
-    int cnt = 0;
-    char *method_name = NULL;
+  for (int frame_index = 0; frame_index < count; frame_index++) {
+    char *method_name = nullptr;
     jint method_modifiers = 0;
-    jvmtiLocalVariableEntry* table = NULL;
-    err =jvmti->GetMethodName(frames[frame_index].method, &method_name, NULL, NULL);
+    err =jvmti->GetMethodName(frames[frame_index].method, &method_name, nullptr, nullptr);
     check_jvmti_error(err, "GetMethodName");
 
     err =jvmti->GetMethodModifiers(frames[frame_index].method, &method_modifiers);
@@ -231,6 +259,8 @@ trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
     debug("Inspecting method: %s, %d", method_name, method_modifiers);
     deallocate(jvmti, jni, method_name);
 
+    jvmtiLocalVariableEntry* table = nullptr;
+    jint entry_count = 0;
     err =jvmti->GetLocalVariableTable(frames[frame_index].method, &entry_count, &table);
     if (err == JVMTI_ERROR_NATIVE_METHOD || err == JVMTI_ERROR_ABSENT_INFORMATION
             || err == JVMTI_ERROR_WRONG_PHASE) {
@@ -242,7 +272,7 @@ trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
     mdata->inspectedVariables += entry_count;
 
     debug("Variables: ");
-    for (cnt = 0; cnt < (int) entry_count; cnt++) {
+    for (int cnt = 0; cnt < (int) entry_count; cnt++) {
       debug(" %s  %d", table[cnt].name, (int) table[cnt].slot);
       deallocate(jvmti, jni, table[cnt].name);
       deallocate(jvmti, jni, table[cnt].signature);
@@ -253,72 +283,45 @@ trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   debug("---- End of stack inspection %d -----", count);
 }
 
-const char*
-bool2str(const jboolean val) {
-  return val == JNI_FALSE ? "JNI_FALSE" : "JNI_TRUE";
-}
-
-void
-raw_monitor_enter(jrawMonitorID m) {
-  get_jvmti()->RawMonitorEnter(m);
-}
-
-void
-raw_monitor_exit(jrawMonitorID m) {
-  get_jvmti()->RawMonitorExit(m);
-}
-
-static jboolean
-should_stop(const volatile jboolean *stop, volatile jboolean *finished) {
-  jboolean should_stop = JNI_FALSE;
-  raw_monitor_enter(mdata->finished_lock);
-  should_stop = *stop;
-  debug("check = %s", bool2str(should_stop));
-  if (should_stop == JNI_TRUE) {
-      *finished = JNI_TRUE;
-  }
-  raw_monitor_exit(mdata->finished_lock);
-  return should_stop;
-}
-
 static void JNICALL
 inspect_all_threads(jvmtiEnv *jvmti, JNIEnv *jni) {
     jint threads_count = 0;
-    jthread *threads = NULL;
+    jthread *threads = nullptr;
     jvmtiError err = JVMTI_ERROR_NONE;
-    int t = 0;
     debug("Inspect:  Starting cycle...");
     err =jvmti->GetAllThreads(&threads_count, &threads);
     check_jvmti_error(err, "GetAllThreads");
-    for (t = 0; t < (int)threads_count; t++) {
+    for (int t = 0; t < (int)threads_count; t++) {
       jvmtiThreadInfo info;
-      jthread thread;
       debug("Inspecting thread num %d at addr [%p]",t, threads[t]);
       err = jvmti->GetThreadInfo(threads[t], &info);
       check_jvmti_error(err, "GetThreadInfo");
-      // Skip jvmti-related threads to avoid deadlocks
-      // The non-intrusive actions are allowed to ensure that results are not affected
-      // TODO check if inspection of JFR threads might cause deadlock
-      if (strstr(info.name, JVMTI_PREFIX) == NULL && strstr(info.name, "JFR") == NULL) {
-        thread = threads[t];
+      // Skip agent thread itself and JFR threads to avoid potential deadlocks
+      if (strstr(info.name, JVMTI_AGENT_NAME) == nullptr
+        && strstr(info.name, "JFR") == nullptr) {
+        // The non-intrusive actions are allowed to ensure that results of target
+        // thread are not affected.
+        jthread thread = threads[t];
         trace_stack(jvmti, jni, thread);
 
-        // TODO enable in debugger version
-        /*
-        debug("Inspect: Trying to suspend thread %s", info.name);
-        err =jvmti->SuspendThread(thread);
-        if (err != JVMTI_ERROR_THREAD_NOT_ALIVE) {
+        if (mdata->is_debugger_enabled) {
+          debug("Inspect: Trying to suspend thread %s", info.name);
+          err =jvmti->SuspendThread(thread);
+          if (err == JVMTI_ERROR_THREAD_NOT_ALIVE) {
+            debug("Inspect:  thread %s is not alive. Skipping.", info.name);
+            continue;
+          }
           check_jvmti_error(err, "SuspendThread");
           debug("Inspect:  Suspended thread %s", info.name);
+
           trace_stack(jvmti, jni, thread);
+
           debug("Inspect: Trying to resume thread %s", info.name);
           err =jvmti->ResumeThread(thread);
           check_jvmti_error(err, "ResumeThread");
           debug("Inspect:  Resumed thread %s", info.name);
-        } else {
-          debug("Inspect:  thread %s is not alive. Skipping.", info.name);
         }
-        */
+
       }
       deallocate(jvmti, jni, info.name);
       jni->DeleteLocalRef(info.thread_group);
@@ -328,67 +331,143 @@ inspect_all_threads(jvmtiEnv *jvmti, JNIEnv *jni) {
     deallocate(jvmti, jni, threads);
 }
 
+
+static jint JNICALL
+heap_iteration_callback(jlong class_tag, jlong size, jlong* tag_ptr, jint length, void* user_data) {
+  int* count = (int*) user_data;
+  *count += 1;
+  return JVMTI_VISIT_OBJECTS;
+}
+
+
+static jint
+get_heap_info(jvmtiEnv *jvmti, JNIEnv *jni, jclass klass) {
+  jvmtiError err = JVMTI_ERROR_NONE;
+  int count = 0;
+  jvmtiHeapCallbacks callbacks;
+  (void) memset(&callbacks, 0, sizeof (callbacks));
+  callbacks.heap_iteration_callback = &heap_iteration_callback;
+  err = jvmti->IterateThroughHeap(0, klass, &callbacks, &count);
+  check_jvmti_error(err, "IterateThroughHeap");
+  return count;
+}
+
+int
+is_event_frequent(int event) {
+  return event == JVMTI_EVENT_SINGLE_STEP
+      || event == JVMTI_EVENT_METHOD_ENTRY
+      || event == JVMTI_EVENT_METHOD_EXIT
+      || event == JVMTI_EVENT_EXCEPTION_CATCH
+      || event == JVMTI_EVENT_EXCEPTION;
+}
+
+int
+is_event_excluded(int event) {
+  int i = 0;
+  while(i < mdata->events_excluded_size) {
+    if (event == mdata->events_excluded[i]) {
+      return JNI_TRUE;
+    }
+    i++;
+  }
+  return JNI_FALSE;
+}
+
+/*
+ * This helper method is used by enable_frequent_events() and enable_common_events().
+ * It enables frequent OR non-frequent events.
+ */
+static void
+enable_events(jvmtiEnv *jvmti, jboolean update_frequent_events) {
+  debug("Enabling events\n");
+  jvmtiError err = JVMTI_ERROR_NONE;
+  for(int event = JVMTI_MIN_EVENT_TYPE_VAL; event < JVMTI_MAX_EVENT_TYPE_VAL; event++) {
+    if (is_event_excluded(event)) {
+      debug("Event %d excluded.", event);
+      continue;
+    }
+    if (is_event_frequent(event) != update_frequent_events ) {
+      debug("Evecnt %d is not enabled as frequent/slow.", event);
+      continue;
+    }
+    err = jvmti->SetEventNotificationMode(JVMTI_ENABLE, static_cast<jvmtiEvent>(event), nullptr);
+    check_jvmti_error(err, "SetEventNotificationMode");
+  }
+  debug("Enabling events done\n");
+}
+
+static void
+enable_frequent_events(jvmtiEnv *jvmti) {
+  enable_events(jvmti, JNI_TRUE);
+}
+
+static void
+enable_common_events(jvmtiEnv *jvmti) {
+  enable_events(jvmti,JNI_FALSE);
+}
+
+
+static void
+disable_all_events(jvmtiEnv *jvmti) {
+  jvmtiError err = JVMTI_ERROR_NONE;
+  int event = JVMTI_MIN_EVENT_TYPE_VAL - 1;
+  while(event++ < JVMTI_MAX_EVENT_TYPE_VAL) {
+    err = jvmti->SetEventNotificationMode(JVMTI_DISABLE, static_cast<jvmtiEvent>(event), nullptr);
+    check_jvmti_error(err, "SetEventNotificationMode");
+  }
+}
 static void JNICALL
 stress_agent(jvmtiEnv *jvmti, JNIEnv *jni, void *p) {
+  jvmtiError err = JVMTI_ERROR_NONE;
   debug("Debugger: Thread started.");
-  while (!should_stop(&mdata->agent_request_stop, &mdata->agent)) {
-    raw_monitor_enter(mdata->debugger_lock);
+  while (!should_stop(jvmti, jni)) {
+    enable_common_events(jvmti);
+    jclass kls;
+    jint obj_count;
+    // Iterate through heap and get some statistics
+    kls = find_class(jni, "java/lang/String");
+    //obj_count = get_heap_info(jni, kls);
+
+    //err = jvmti->SetHeapSamplingInterval(0);
+    check_jvmti_error(err, "SetHeapSamplingInterval");
+
     inspect_all_threads(jvmti, jni);
+
     sleep_ms(100);
-    raw_monitor_exit(mdata->debugger_lock);
+
+    // err = jvmti->SetHeapSamplingInterval(mdata->heap_sampling_interval);
+    check_jvmti_error(err, "SetHeapSamplingInterval");
   }
   debug("Debugger: Thread finished.");
 }
 
 
 /*
- * Events section. Get events info and report summary for each iteration.
+ *  Events section.
+ *  Most of the events just increase counter and print debug infoe.
+ *  The VMInit/VMDeath are also start and stop jvmti stress agent.
  */
+
 static void
 register_event(jlong *event) {
-//  raw_monitor_enter(mdata->events_lock);
   (*event)++;
-//  debug("event %d\n", (event - &mdata->cbBreakpoint) );
-//  raw_monitor_exit(mdata->events_lock);
+ // debug("event %d\n", (event - &mdata->cbBreakpoint));
 }
-
-static jlong
-get_event_count(jlong *event) {
-  jlong result;
-  raw_monitor_enter(mdata->events_lock);
-  result = *event;
-  raw_monitor_exit(mdata->events_lock);
-  return result;
-}
-
 
 static void JNICALL
 cbVMInit(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbVMInit);
-  create_agent_thread(jni, JVMTI_AGENT_NAME, &stress_agent);
+  if (mdata->is_agent_enabled) {
+    create_agent_thread(jvmti, jni, JVMTI_AGENT_NAME, &stress_agent);
+  }
 }
 
 static void JNICALL
 cbVMDeath(jvmtiEnv *jvmti, JNIEnv *jni) {
   register_event(&mdata->cbVMDeath);
-  jboolean finished = JNI_FALSE;
-  raw_monitor_enter(mdata->finished_lock);
-  mdata->agent_request_stop = JNI_TRUE;
-  //set_callbacks(JNI_FALSE);
-  raw_monitor_exit(mdata->finished_lock);
-
-  while (!finished) {
-    raw_monitor_enter(mdata->finished_lock);
-    debug("Shutdown. Completion status: debugger = %s:", bool2str(mdata->agent));
-    finished = mdata->agent;
-    raw_monitor_exit(mdata->finished_lock);
-    sleep_ms(1000);
+  if (mdata->is_agent_enabled) {
+    stop_agent_thread(jvmti, jni);
   }
-
-
-  debug("Native agent stopped");
-
-  destroy_raw_monitor(jvmti, jni, mdata->debugger_lock);
   destroy_raw_monitor(jvmti, jni, mdata->events_lock);
   destroy_raw_monitor(jvmti, jni, mdata->finished_lock);
 }
@@ -638,79 +717,16 @@ cbSampledObjectAlloc(jvmtiEnv *jvmti,
   register_event(&mdata->cbSampledObjectAlloc);
 }
 
-int
-is_event_frequent(int event) {
-  return event == JVMTI_EVENT_SINGLE_STEP
-      || event == JVMTI_EVENT_METHOD_ENTRY
-      || event == JVMTI_EVENT_METHOD_EXIT
-      || event == JVMTI_EVENT_EXCEPTION_CATCH
-      || event == JVMTI_EVENT_EXCEPTION;
-}
-
-int
-is_event_excluded(int event) {
-  int i = 0;
-  while(i < mdata->events_excluded_size) {
-    if (event == mdata->events_excluded[i]) {
-      return JNI_TRUE;
-    }
-    i++;
-  }
-  return JNI_FALSE;
-}
-
-/*
- * This helper method is used by enable_frequent_events() and enable_common_events().
- * It enables frequent OR non-frequent events.
- */
-static void
-enable_events(jboolean update_frequent_events) {
-  debug("Enabling events\n");
-  jvmtiError err = JVMTI_ERROR_NONE;
-  for(int event = JVMTI_MIN_EVENT_TYPE_VAL; event < JVMTI_MAX_EVENT_TYPE_VAL; event++) {
-    if (is_event_excluded(event)) {
-      debug("Event %d excluded.", event);
-      continue;
-    }
-    if (is_event_frequent(event) != update_frequent_events ) {
-      debug("Evecnt %d is not enabled as frequent/slow.", event);
-      continue;
-    }
-    err = get_jvmti()->SetEventNotificationMode(JVMTI_ENABLE, static_cast<jvmtiEvent>(event), NULL);
-    check_jvmti_error(err, "SetEventNotificationMode");
-  }
-  debug("Enabling events done\n");
-}
-
-static void
-enable_frequent_events() {
-  enable_events(JNI_TRUE);
-}
-
-static void
-enable_common_events() {
-  enable_events(JNI_FALSE);
-}
 
 
 static void
-disable_all_events() {
-  jvmtiError err = JVMTI_ERROR_NONE;
-  int event = JVMTI_MIN_EVENT_TYPE_VAL - 1;
-  while(event++ < JVMTI_MAX_EVENT_TYPE_VAL) {
-    err = get_jvmti()->SetEventNotificationMode(JVMTI_DISABLE, static_cast<jvmtiEvent>(event), NULL);
-    check_jvmti_error(err, "SetEventNotificationMode");
-  }
-}
-
-static void
-set_callbacks(jboolean on) {
+set_callbacks(jvmtiEnv *jvmti, jboolean on) {
   jvmtiError err = JVMTI_ERROR_NONE;
   jvmtiEventCallbacks callbacks;
 
   (void) memset(&callbacks, 0, sizeof (callbacks));
   if (on == JNI_FALSE) {
-    err = get_jvmti()->SetEventCallbacks(&callbacks, (int) sizeof (jvmtiEventCallbacks));
+    err = jvmti->SetEventCallbacks(&callbacks, (int) sizeof (jvmtiEventCallbacks));
     check_jvmti_error(err, "SetEventCallbacks");
     return;
   }
@@ -747,263 +763,60 @@ set_callbacks(jboolean on) {
   callbacks.VMDeath = &cbVMDeath;
   callbacks.VMInit = &cbVMInit;
   callbacks.VMObjectAlloc = &cbVMObjectAlloc;
-  err = get_jvmti()->SetEventCallbacks(&callbacks, (int) sizeof (jvmtiEventCallbacks));
+  err = jvmti->SetEventCallbacks(&callbacks, (int) sizeof (jvmtiEventCallbacks));
   check_jvmti_error(err, "SetEventCallbacks");
 }
 
-
-static jint JNICALL
-heap_iteration_callback(jlong class_tag, jlong size, jlong* tag_ptr, jint length, void* user_data) {
-  int* count = (int*) user_data;
-  *count += 1;
-  return JVMTI_VISIT_OBJECTS;
-}
-
-static jint
-get_heap_info(JNIEnv *jni, jclass klass) {
-  jvmtiError err = JVMTI_ERROR_NONE;
-  int count = 0;
-  jvmtiHeapCallbacks callbacks;
-  (void) memset(&callbacks, 0, sizeof (callbacks));
-  callbacks.heap_iteration_callback = &heap_iteration_callback;
-  err = get_jvmti()->IterateThroughHeap(0, klass, &callbacks, &count);
-  check_jvmti_error(err, "IterateThroughHeap");
-  return count;
-}
-
-/*
- * This method starts all the work. Should be called in JvmtiStressModule#init() after java-based properties are initialized..
- * Also it set the JVMTI callback functions and setup event modes.
- */
-JNIEXPORT jboolean JNICALL
-Java_JvmtiStressAgent_initNative(JNIEnv *jni,
-                  jobject _this,
-                  jobject settings) {
-
-  set_callbacks(JNI_TRUE);
-  if (mdata->are_events_enabled) {
-    enable_common_events();
-  }
-
-  debug("Native agent initialization completed");
-  return JNI_TRUE;
-}
-
-/*
- * This method finishes all native work. Should be called in JvmtiStressModule#onShutdown().
- * Method waits until jvmti threads stop so they don't generate errors after shutdown.
- */
-JNIEXPORT jboolean JNICALL
-Java_JvmtiStressAgent_shutdownNative(JNIEnv *jni, jobject _this) {
-  jboolean finished = JNI_FALSE;
-  raw_monitor_enter(mdata->finished_lock);
-  mdata->agent_request_stop = JNI_TRUE;
-  set_callbacks(JNI_FALSE);
-  raw_monitor_exit(mdata->finished_lock);
-
-  while (!finished) {
-    raw_monitor_enter(mdata->finished_lock);
-    debug("Shutdown. Completion status: debugger = %s:", bool2str(mdata->agent));
-    finished = mdata->agent;
-    raw_monitor_exit(mdata->finished_lock);
-    sleep_ms(1000);
-  }
-
-
-  debug("Native agent stopped");
-  return JNI_TRUE;
-}
-
-/*
- * This method is invoked at the beginning of each test iteration.
- * It is used to reset all iteration specific data.
- */
-JNIEXPORT void JNICALL
-Java_startIteration(JNIEnv *jni, jobject _this) {
-  jvmtiError err = JVMTI_ERROR_NONE;
-  if (mdata->are_events_enabled) {
-    disable_all_events();
-    raw_monitor_enter(mdata->events_lock);
-    mdata->cbBreakpoint = 0;
-    mdata->cbClassFileLoadHook = 0;
-    mdata->cbClassLoad = 0;
-    mdata->cbClassPrepare = 0;
-    mdata->cbCompiledMethodLoad = 0;
-    mdata->cbCompiledMethodUnload = 0;
-    mdata->cbDataDumpRequest = 0;
-    mdata->cbDynamicCodeGenerated = 0;
-    mdata->cbException = 0;
-    mdata->cbExceptionCatch = 0;
-    mdata->cbFieldAccess = 0;
-    mdata->cbFieldModification = 0;
-    mdata->cbFramePop = 0;
-    mdata->cbGarbageCollectionFinish = 0;
-    mdata->cbGarbageCollectionStart = 0;
-    mdata->cbMethodEntry = 0;
-    mdata->cbMethodExit = 0;
-    mdata->cbMonitorContendedEnter = 0;
-    mdata->cbMonitorContendedEntered = 0;
-    mdata->cbMonitorWait = 0;
-    mdata->cbMonitorWaited = 0;
-    mdata->cbNativeMethodBind = 0;
-    mdata->cbObjectFree = 0;
-    mdata->cbResourceExhausted = 0;
-    mdata->cbSampledObjectAlloc = 0;
-    mdata->cbSingleStep = 0;
-    mdata->cbThreadEnd = 0;
-    mdata->cbThreadStart = 0;
-    mdata->cbVMDeath = 0;
-    mdata->cbVMInit = 0;
-    mdata->cbVMObjectAlloc = 0;
-    raw_monitor_exit(mdata->events_lock);
-    enable_common_events();
-  }
-  raw_monitor_enter(mdata->debugger_lock);
-  mdata->inspectedMethods = 0;
-  mdata->inspectedVariables = 0;
-  raw_monitor_exit(mdata->debugger_lock);
-
-  err = get_jvmti()->SetHeapSamplingInterval(mdata->heap_sampling_interval);
-  check_jvmti_error(err, "SetHeapSamplingInterval");
-
-  if (mdata->is_agent_enabled)  {
-    mdata->agent = JNI_FALSE;
-    mdata->agent_request_stop = JNI_FALSE;
-    create_agent_thread(jni, JVMTI_AGENT_NAME, &stress_agent);
-  }
-
-}
-
-/*
- * This method is invoked at the end of each test iteration.
- * It is used to collect test statistics per iteration for later analysis.
- */
-JNIEXPORT jobject JNICALL
-Java_finishIteration(JNIEnv *jni, jobject _this) {
-  jvmtiError err = JVMTI_ERROR_NONE;
-  jclass cls;
-  jmethodID constructor;
-  jobject obj;
-  jclass kls;
-  jint obj_count;
-
-  if (mdata->is_agent_enabled)  {
-    raw_monitor_enter(mdata->finished_lock);
-    mdata->agent_request_stop = JNI_TRUE;
-    raw_monitor_exit(mdata->finished_lock);
-  }
-
-  cls = find_class(jni, JVMTI_STATISTICS);
-  constructor = find_method(get_jvmti(), jni, cls, "<init>"/*, "()V"*/);
-  obj = jni->NewObject(cls, constructor);
-  if (mdata->are_events_enabled) {
-    if (mdata->frequent_events_interval != 0) {
-      enable_frequent_events();
-      // Enabled very frequent performance sensitive events for very limited time only
-      sleep_ms(mdata->frequent_events_interval);
-    }
-    disable_all_events();
-    enable_common_events();
-  }
-
-
-  // Iterate through heap and get some statistics
-  kls = find_class(jni, "java/lang/String");
-  obj_count = get_heap_info(jni, kls);
-  obj_count = get_heap_info(jni, NULL);
-
-  err = get_jvmti()->SetHeapSamplingInterval(0);
-  check_jvmti_error(err, "SetHeapSamplingInterval");
-  return obj;
-}
-
 static
-void get_capabilities(void) {
+void get_capabilities(jvmtiEnv *jvmti) {
   jvmtiError err = JVMTI_ERROR_NONE;
   jvmtiCapabilities capabilities;
   (void) memset(&capabilities, 0, sizeof (capabilities));
-  err = get_jvmti()->GetPotentialCapabilities(&capabilities);
+  err = jvmti->GetPotentialCapabilities(&capabilities);
 
-  // TODO enable in debuggere version of agent
+  if (!mdata->is_debugger_enabled) {
+    //init_always_solo_capabilities
+    capabilities.can_suspend = false;
+    capabilities.can_generate_sampled_object_alloc_events = false;
 
-  //init_always_solo_capabilities
-  capabilities.can_suspend = false;
-  capabilities.can_generate_sampled_object_alloc_events = false;
+    capabilities.can_generate_early_vmstart = false;
 
-  capabilities.can_generate_early_vmstart = false;
+    // onload_solo
+    capabilities.can_generate_breakpoint_events = false;
+    capabilities.can_generate_field_access_events = false;
+    capabilities.can_generate_field_modification_events = false;
+  }
 
-  // onload_solo
-  capabilities.can_generate_breakpoint_events = false;
-  capabilities.can_generate_field_access_events = false;
-  capabilities.can_generate_field_modification_events = false;
-
-  // TODO there is a
+  // can_generate_early_vmstart might impact VMStart for any agent
+  // accordingly to spec, so don't enable it
   capabilities.can_generate_early_vmstart = false;
 
   check_jvmti_error(err, "GetPotentialCapabilities");
-  err = get_jvmti()->AddCapabilities(&capabilities);
+  err = jvmti->AddCapabilities(&capabilities);
   check_jvmti_error(err, "AddCapabilities");
-}
-
-static ModuleData*
-mdata_init() {
-  static ModuleData data;
-  (void) memset(&data, 0, sizeof (ModuleData));
-
-  data.agent_request_stop = JNI_FALSE;
-
-  /* Set jvmti stress properties */
-  data.heap_sampling_interval = 1000;
-  data.frequent_events_interval = 10;
-  data.debugger_watch_methods = 100;
-  data.is_agent_enabled = JNI_TRUE;
-  data.are_events_enabled = JNI_TRUE;
-  data.is_debugger_enabled = JNI_FALSE;
-
-  data.events_excluded_size = 0;
-  data.events_excluded =  new jint[0];
-
-  /* Set array of excluded events if needed */
-  data.events_excluded_size = 4;
-  data.events_excluded = new jint[] {
-    JVMTI_EVENT_BREAKPOINT,
-    JVMTI_EVENT_FIELD_ACCESS,
-    JVMTI_EVENT_FIELD_MODIFICATION,
-    JVMTI_EVENT_SAMPLED_OBJECT_ALLOC,
-  };
-
-
-  return &data;
-}
-
-void
-mdata_close(void) {
-  free(mdata->events_excluded);
 }
 
 JNIEXPORT jint JNICALL
 Agent_OnLoad(JavaVM *vm, char *options, void *reserved) {
-  jvmtiEnv *jvmti = NULL;
+  jvmtiEnv *jvmti = nullptr;
   jint res = vm->GetEnv((void **) &jvmti, JVMTI_VERSION_21);
   if (res != JNI_OK) {
     return JNI_ERR;
   }
 
-  mdata = mdata_init();
+  mdata = mdata_init(jvmti);
 
-  gdata_init(jvmti);
-  get_capabilities();
+  get_capabilities(jvmti);
 
   mdata->finished_lock = create_raw_monitor(jvmti, "Finished lock");
   mdata->events_lock = create_raw_monitor(jvmti, "Events lock");
-  mdata->debugger_lock = create_raw_monitor(jvmti, "Debugger lock");
-  set_callbacks(JNI_TRUE);
-  enable_common_events();
+  set_callbacks(jvmti, JNI_TRUE);
+  enable_common_events(jvmti);
 
   return JNI_OK;
 }
 
 JNIEXPORT void JNICALL
 Agent_OnUnload(JavaVM *vm) {
-  gdata_close();
+  mdata_close();
 }
