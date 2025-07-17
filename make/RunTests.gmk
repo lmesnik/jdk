@@ -211,7 +211,7 @@ $(eval $(call SetTestOpt,AOT_JDK,JTREG))
 
 $(eval $(call ParseKeywordVariable, JTREG, \
     SINGLE_KEYWORDS := JOBS TIMEOUT_FACTOR FAILURE_HANDLER_TIMEOUT \
-        TEST_MODE ASSERT VERBOSE RETAIN TEST_THREAD_FACTORY STRESS_AGENT MAX_MEM RUN_PROBLEM_LISTS \
+        TEST_MODE ASSERT VERBOSE RETAIN TEST_THREAD_FACTORY JVMTI_STRESS_AGENT MAX_MEM RUN_PROBLEM_LISTS \
         RETRY_COUNT REPEAT_COUNT MAX_OUTPUT REPORT AOT_JDK $(CUSTOM_JTREG_SINGLE_KEYWORDS), \
     STRING_KEYWORDS := OPTIONS JAVA_OPTIONS VM_OPTIONS KEYWORDS \
         EXTRA_PROBLEM_LISTS LAUNCHER_OPTIONS \
@@ -856,11 +856,11 @@ define SetupRunJtregTestBody
     ))
   endif
 
-  ifneq ($$(JTREG_STRESS_AGENT), )
-    AGENT_FILENAME := $${AGENT_PREFIX}JvmtiStressAgent${AGENT_EXT}
-    $1_JTREG_BASIC_OPTIONS += -javaoption:'-agentpath:${TEST_IMAGE_DIR}/hotspot/jtreg/native/$${AGENT_FILENAME}'
+  ifneq ($$(JTREG_JVMTI_STRESS_AGENT), )
+    AGENT := $${AGENT_PREFIX}JvmtiStressAgent${AGENT_EXT}=$${JTREG_JVMTI_STRESS_AGENT}
+    $1_JTREG_BASIC_OPTIONS += -javaoption:'-agentpath:${TEST_IMAGE_DIR}/hotspot/jtreg/native/$${AGENT}'
     $1_JTREG_BASIC_OPTIONS += $$(addprefix $$(JTREG_PROBLEM_LIST_PREFIX), $$(wildcard \
-	$$(addprefix $$($1_TEST_ROOT)/, ProblemList-$$(JTREG_TEST_THREAD_FACTORY).txt) \
+	$$(addprefix $$($1_TEST_ROOT)/, ProblemList-jvmti-stress-agent.txt) \
     ))
   endif
 
