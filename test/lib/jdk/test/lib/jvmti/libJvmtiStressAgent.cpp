@@ -104,10 +104,11 @@ typedef struct {
 
 ModuleData *mdata;
 static ModuleData*
-mdata_init() {
+mdata_init(jboolean is_debugger_enabled) {
   static ModuleData data;
   (void) memset(&data, 0, sizeof (ModuleData));
 
+  data.is_debugger_enabled = is_debugger_enabled;
   data.log_file = fopen("JvmtiStressAgent.out", "w");
 
   data.agent_request_stop = JNI_FALSE;
@@ -118,7 +119,6 @@ mdata_init() {
   data.frequent_events_interval = 10;
   data.is_agent_enabled = JNI_TRUE;
   data.are_events_enabled = JNI_TRUE;
-  data.is_debugger_enabled = JNI_TRUE;
 
 
   if (data.is_debugger_enabled) {
@@ -139,7 +139,7 @@ mdata_init() {
 }
 
 void
-mdata_close(void) {
+mdata_close() {
   free(mdata->events_excluded);
   fclose(mdata->log_file);
 }
@@ -261,10 +261,10 @@ trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
     char *method_name = nullptr;
     jint method_modifiers = 0;
     err =jvmti->GetMethodName(frames[frame_index].method, &method_name, nullptr, nullptr);
-    check_jvmti_error(err, "GetMethodName");
+    check_jvmti_status(jni, err, "GetMethodName");
 
     err =jvmti->GetMethodModifiers(frames[frame_index].method, &method_modifiers);
-    check_jvmti_error(err, "GetMethodModifiers");
+    check_jvmti_status(jni, err, "GetMethodModifiers");
 
     debug("Inspecting method: %s, %d", method_name, method_modifiers);
     deallocate(jvmti, jni, method_name);
@@ -276,7 +276,7 @@ trace_stack(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
             || err == JVMTI_ERROR_WRONG_PHASE) {
       continue;
     }
-    check_jvmti_error(err, "GetLocalVariableTable");
+    check_jvmti_status(jni, err, "GetLocalVariableTable");
 
     mdata->inspectedMethods += 1;
     mdata->inspectedVariables += entry_count;
@@ -300,12 +300,12 @@ inspect_all_threads(jvmtiEnv *jvmti, JNIEnv *jni) {
     jvmtiError err = JVMTI_ERROR_NONE;
     debug("Inspect:  Starting cycle...");
     err =jvmti->GetAllThreads(&threads_count, &threads);
-    check_jvmti_error(err, "GetAllThreads");
+    check_jvmti_status(jni, err, "GetAllThreads");
     for (int t = 0; t < (int)threads_count; t++) {
       jvmtiThreadInfo info;
       debug("Inspecting thread num %d at addr [%p]",t, threads[t]);
       err = jvmti->GetThreadInfo(threads[t], &info);
-      check_jvmti_error(err, "GetThreadInfo");
+      check_jvmti_status(jni, err, "GetThreadInfo");
       // Skip agent thread itself and JFR threads to avoid potential deadlocks
       if (strstr(info.name, JVMTI_AGENT_NAME) == nullptr
         && strstr(info.name, "JFR") == nullptr) {
@@ -321,14 +321,14 @@ inspect_all_threads(jvmtiEnv *jvmti, JNIEnv *jni) {
             debug("Inspect:  thread %s is not alive. Skipping.", info.name);
             continue;
           }
-          check_jvmti_error(err, "SuspendThread");
+          check_jvmti_status(jni, err, "SuspendThread");
           debug("Inspect:  Suspended thread %s", info.name);
 
           trace_stack(jvmti, jni, thread);
 
           debug("Inspect: Trying to resume thread %s", info.name);
           err =jvmti->ResumeThread(thread);
-          check_jvmti_error(err, "ResumeThread");
+          check_jvmti_status(jni, err, "ResumeThread");
           debug("Inspect:  Resumed thread %s", info.name);
         }
 
@@ -358,7 +358,7 @@ get_heap_info(jvmtiEnv *jvmti, JNIEnv *jni, jclass klass) {
   (void) memset(&callbacks, 0, sizeof (callbacks));
   callbacks.heap_iteration_callback = &heap_iteration_callback;
   err = jvmti->IterateThroughHeap(0, klass, &callbacks, &count);
-  check_jvmti_error(err, "IterateThroughHeap");
+  check_jvmti_status(jni, err, "IterateThroughHeap");
   return count;
 }
 
@@ -367,8 +367,12 @@ is_event_frequent(int event) {
   return event == JVMTI_EVENT_SINGLE_STEP
       || event == JVMTI_EVENT_METHOD_ENTRY
       || event == JVMTI_EVENT_METHOD_EXIT
+      || event == JVMTI_EVENT_FRAME_POP
+      || event == JVMTI_EVENT_FIELD_ACCESS
+      || event == JVMTI_EVENT_FIELD_MODIFICATION
       || event == JVMTI_EVENT_EXCEPTION_CATCH
-      || event == JVMTI_EVENT_EXCEPTION;
+      || event == JVMTI_EVENT_EXCEPTION
+  ;
 }
 
 int
@@ -389,6 +393,9 @@ is_event_excluded(int event) {
  */
 static void
 enable_events(jvmtiEnv *jvmti, jboolean update_frequent_events) {
+  if (!mdata->are_events_enabled) {
+    return;
+  }
   debug("Enabling events\n");
   jvmtiError err = JVMTI_ERROR_NONE;
   for(int event = JVMTI_MIN_EVENT_TYPE_VAL; event < JVMTI_MAX_EVENT_TYPE_VAL; event++) {
@@ -397,7 +404,7 @@ enable_events(jvmtiEnv *jvmti, jboolean update_frequent_events) {
       continue;
     }
     if (is_event_frequent(event) != update_frequent_events ) {
-      debug("Evecnt %d is not enabled as frequent/slow.", event);
+      debug("Event %d is not enabled as frequent/slow.", event);
       continue;
     }
     err = jvmti->SetEventNotificationMode(JVMTI_ENABLE, static_cast<jvmtiEvent>(event), nullptr);
@@ -432,22 +439,25 @@ stress_agent(jvmtiEnv *jvmti, JNIEnv *jni, void *p) {
   debug("Debugger: Thread started.");
   while (!should_stop(jvmti, jni)) {
     enable_common_events(jvmti);
-    jclass kls;
-    jint obj_count;
+
     // Iterate through heap and get some statistics
-    kls = find_class(jni, "java/lang/String");
-    obj_count = get_heap_info(jvmti, jni, kls);
+    jclass kls = find_class(jni, "java/lang/String");
+    jlong obj_count = get_heap_info(jvmti, jni, kls);
     debug("Debugger: Heap info: %d", obj_count);
 
+    // requires can_generate_sampled_object_alloc_events
+    // which is solo capability
     err = jvmti->SetHeapSamplingInterval(mdata->heap_sampling_interval);
-    check_jvmti_error(err, "SetHeapSamplingInterval");
+    check_jvmti_status(jni, err, "SetHeapSamplingInterval");
 
     inspect_all_threads(jvmti, jni);
 
     sleep_ms(100);
 
     err = jvmti->SetHeapSamplingInterval(0);
-    check_jvmti_error(err, "SetHeapSamplingInterval");
+    check_jvmti_status(jni, err, "SetHeapSamplingInterval");
+
+    // The frequent events
     enable_frequent_events(jvmti);
     sleep_ms(10);
     disable_all_events(jvmti);
@@ -466,12 +476,12 @@ stress_agent(jvmtiEnv *jvmti, JNIEnv *jni, void *p) {
 static void
 register_event(jlong *event) {
   (*event)++;
-  debug("event %d\n", (event - &mdata->cbBreakpoint));
 }
 
 static void JNICALL
 cbVMInit(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbVMInit);
+  debug("Event cbVMInit\n");
   if (mdata->is_agent_enabled) {
     create_agent_thread(jvmti, jni, JVMTI_AGENT_NAME, &stress_agent);
   }
@@ -480,6 +490,7 @@ cbVMInit(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
 static void JNICALL
 cbVMDeath(jvmtiEnv *jvmti, JNIEnv *jni) {
   register_event(&mdata->cbVMDeath);
+  debug("Event cbVMDeath\n");
   if (mdata->is_agent_enabled) {
     stop_agent_thread(jvmti, jni);
   }
@@ -490,21 +501,26 @@ cbVMDeath(jvmtiEnv *jvmti, JNIEnv *jni) {
 static void JNICALL
 cbThreadStart(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbThreadStart);
+  debug("Event cbThreadStart\n");
 }
 
 static void JNICALL
 cbThreadEnd(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbThreadEnd);
+  debug("Event cbThreadEnd\n");
 }
 
 static void JNICALL
 cbVirtualThreadStart(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbThreadStart);
+  debug(" cbThreadStart\n");
+  debug("Event cbThreadStart\n");
 }
 
 static void JNICALL
 cbVirtualThreadEnd(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread) {
   register_event(&mdata->cbThreadEnd);
+  debug("Event cbThreadEnd\n");
 }
 
 static void JNICALL
@@ -520,21 +536,25 @@ cbClassFileLoadHook(jvmtiEnv *jvmti, JNIEnv* jni,
   *new_class_data = new_class_data_copy;
   */
   register_event(&mdata->cbClassFileLoadHook);
+  debug("Event cbClassFileLoadHook\n");
 }
 
 static void JNICALL
 cbClassLoad(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread, jclass klass) {
   register_event(&mdata->cbClassLoad);
+  debug("Event cbClassLoad\n");
 }
 
 static void JNICALL
 cbClassPrepare(jvmtiEnv *jvmti, JNIEnv *jni, jthread thread, jclass klass) {
   register_event(&mdata->cbClassPrepare);
+  debug("Event cbClassPrepare\n");
 }
 
 static void JNICALL
 cbDataDumpRequest(jvmtiEnv *jvmti) {
   register_event(&mdata->cbDataDumpRequest);
+  debug("Event cbDataDumpRequest\n");
 }
 
 static void JNICALL
@@ -547,6 +567,7 @@ cbException(jvmtiEnv *jvmti,
             jmethodID catch_method,
             jlocation catch_location) {
   register_event(&mdata->cbException);
+  debug("Event cbException\n");
 }
 
 static void JNICALL
@@ -554,45 +575,53 @@ cbExceptionCatch(jvmtiEnv *jvmti, JNIEnv *jni,
                  jthread thread, jmethodID method, jlocation location,
                  jobject exception) {
   register_event(&mdata->cbExceptionCatch);
+  debug("Event cbExceptionCatch\n");
 }
 
 static void JNICALL
 cbMonitorWait(jvmtiEnv *jvmti, JNIEnv *jni,
               jthread thread, jobject object, jlong timeout) {
   register_event(&mdata->cbMonitorWait);
+  debug("Event cbMonitorWait\n");
 }
 
 static void JNICALL
 cbMonitorWaited(jvmtiEnv *jvmti, JNIEnv *jni,
                 jthread thread, jobject object, jboolean timed_out) {
   register_event(&mdata->cbMonitorWaited);
+  debug("Event cbMonitorWaited\n");
 }
 
 static void JNICALL
 cbMonitorContendedEnter(jvmtiEnv *jvmti, JNIEnv *jni,
                         jthread thread, jobject object) {
   register_event(&mdata->cbMonitorContendedEnter);
+  debug("Event cbMonitorContendedEnter\n");
 }
 
 static void JNICALL
 cbMonitorContendedEntered(jvmtiEnv *jvmti, JNIEnv* jni,
                           jthread thread, jobject object) {
   register_event(&mdata->cbMonitorContendedEntered);
+  debug("Event cbMonitorContendedEntered\n");
 }
 
 static void JNICALL
 cbGarbageCollectionStart(jvmtiEnv *jvmti) {
   register_event(&mdata->cbGarbageCollectionStart);
+  debug("Event cbGarbageCollectionStart\n");
 }
 
 static void JNICALL
 cbGarbageCollectionFinish(jvmtiEnv *jvmti) {
   register_event(&mdata->cbGarbageCollectionFinish);
+  debug("Event cbGarbageCollectionFinish\n");
 }
 
 static void JNICALL
 cbObjectFree(jvmtiEnv *jvmti, jlong tag) {
   register_event(&mdata->cbObjectFree);
+  debug("Event cbObjectFree\n");
 }
 
 static void JNICALL
@@ -603,6 +632,7 @@ cbBreakpoint(jvmtiEnv *jvmti,
              jlocation location) {
   static long breakpoint_cnt = 0;
   register_event(&mdata->cbBreakpoint);
+  debug("Event cbBreakpoint\n");
 }
 
 static void JNICALL
@@ -612,6 +642,7 @@ cbSingleStep(jvmtiEnv *jvmti,
              jmethodID method,
              jlocation location) {
   register_event(&mdata->cbSingleStep);
+  debug("Event cbSingleStep\n");
 }
 
 static void JNICALL
@@ -624,6 +655,7 @@ cbFieldAccess(jvmtiEnv *jvmti,
               jobject object,
               jfieldID field) {
   register_event(&mdata->cbFieldAccess);
+  debug("Event cbFieldAccess\n");
 }
 
 static void JNICALL
@@ -638,6 +670,7 @@ cbFieldModification(jvmtiEnv *jvmti,
                     char signature_type,
                     jvalue new_value) {
   register_event(&mdata->cbFieldModification);
+  debug("Event cbFieldModification\n");
 }
 
 static void JNICALL
@@ -647,6 +680,7 @@ cbFramePop(jvmtiEnv *jvmti,
            jmethodID method,
            jboolean was_popped_by_exception) {
   register_event(&mdata->cbFramePop);
+  debug("Event cbFramePop\n");
 }
 
 static void JNICALL
@@ -655,6 +689,7 @@ cbMethodEntry(jvmtiEnv *jvmti,
               jthread thread,
               jmethodID method) {
   register_event(&mdata->cbMethodEntry);
+  debug("Event cbMethodEntry\n");
 }
 
 static void JNICALL
@@ -665,6 +700,7 @@ cbMethodExit(jvmtiEnv *jvmti,
              jboolean was_popped_by_exception,
              jvalue return_value) {
   register_event(&mdata->cbMethodExit);
+  debug("Event cbMethodExit\n");
 }
 
 static void JNICALL
@@ -675,6 +711,7 @@ cbNativeMethodBind(jvmtiEnv *jvmti,
                    void* address,
                    void** new_address_ptr) {
   register_event(&mdata->cbNativeMethodBind);
+  debug("Event cbNativeMethodBind\n");
 }
 
 static void JNICALL
@@ -686,6 +723,7 @@ cbCompiledMethodLoad(jvmtiEnv *jvmti,
                      const jvmtiAddrLocationMap* map,
                      const void* compile_info) {
   register_event(&mdata->cbCompiledMethodLoad);
+  debug("Event cbCompiledMethodLoad\n");
 }
 
 static void JNICALL
@@ -693,6 +731,7 @@ cbCompiledMethodUnload(jvmtiEnv *jvmti,
                        jmethodID method,
                        const void* code_addr) {
   register_event(&mdata->cbCompiledMethodUnload);
+  debug("Event cbCompiledMethodUnload\n");
 }
 
 static void JNICALL
@@ -701,6 +740,7 @@ cbDynamicCodeGenerated(jvmtiEnv *jvmti,
                        const void* address,
                        jint length) {
   register_event(&mdata->cbDynamicCodeGenerated);
+  debug("Event cbDynamicCodeGenerated\n");
 }
 
 static void JNICALL
@@ -710,6 +750,7 @@ cbResourceExhausted(jvmtiEnv *jvmti,
                     const void* reserved,
                     const char* description) {
   register_event(&mdata->cbResourceExhausted);
+  debug("Event cbResourceExhausted\n");
 }
 
 static void JNICALL
@@ -720,6 +761,7 @@ cbVMObjectAlloc(jvmtiEnv *jvmti,
                 jclass object_klass,
                 jlong size) {
   register_event(&mdata->cbVMObjectAlloc);
+  debug("Event cbVMObjectAlloc\n");
 }
 
 static void JNICALL
@@ -730,6 +772,7 @@ cbSampledObjectAlloc(jvmtiEnv *jvmti,
                      jclass object_klass,
                      jlong size) {
   register_event(&mdata->cbSampledObjectAlloc);
+  debug("Event cbSampledObjectAlloc\n");
 }
 
 
@@ -792,9 +835,6 @@ void get_capabilities(jvmtiEnv *jvmti) {
   if (!mdata->is_debugger_enabled) {
     //init_always_solo_capabilities
     capabilities.can_suspend = false;
-    capabilities.can_generate_sampled_object_alloc_events = false;
-
-    capabilities.can_generate_early_vmstart = false;
 
     // onload_solo
     capabilities.can_generate_breakpoint_events = false;
@@ -819,7 +859,26 @@ Agent_OnLoad(JavaVM *vm, char *options, void *reserved) {
     return JNI_ERR;
   }
 
-  mdata = mdata_init();
+  bool debugger_enabled = true;
+
+  if (options != nullptr) {
+    char *opts = strdup(options);
+    char *token = strtok(opts, ",");
+
+    while (token != nullptr) {
+      if (strncmp(token, "debugger=", 9) == 0) {
+        if (strcmp(token + 9, "true") == 0)
+          debugger_enabled = true;
+        else
+          debugger_enabled = false;
+      }
+      token = strtok(nullptr, ",");
+    }
+    free(opts);
+  }
+
+  printf("Debugger enabled: %s\n", debugger_enabled ? "true" : "false");
+  mdata = mdata_init(debugger_enabled);
 
   get_capabilities(jvmti);
 
