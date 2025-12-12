@@ -24,6 +24,8 @@ package jdk.test.lib.apps;
 
 import java.util.concurrent.Phaser;
 
+import jdk.test.lib.thread.TestThreadFactory;
+
 public class LingeredAppWithDeadlock extends LingeredApp {
 
     private static final Object Lock1 = new Object();
@@ -33,7 +35,7 @@ public class LingeredAppWithDeadlock extends LingeredApp {
 
     private static final Phaser p = new Phaser(2);
 
-    private static class ThreadOne extends Thread {
+    private static class ThreadOne implements Runnable {
         public void run() {
             // wait Lock2 is locked
             p.arriveAndAwaitAdvance();
@@ -47,7 +49,7 @@ public class LingeredAppWithDeadlock extends LingeredApp {
         }
     }
 
-    private static class ThreadTwo extends Thread {
+    private static class ThreadTwo implements Runnable {
         public void run() {
             synchronized (Lock2) {
                 // signal Lock2 is locked
@@ -68,8 +70,11 @@ public class LingeredAppWithDeadlock extends LingeredApp {
         }
 
         // Run two theads that should come to deadlock
-        new ThreadOne().start();
-        new ThreadTwo().start();
+        Thread t1 = TestThreadFactory.newThread(new ThreadOne());
+        t1.start();
+
+        Thread t2 = TestThreadFactory.newThread(new ThreadTwo());
+        t2.start();
 
         if (reachCount > 0) {
             // Not able to deadlock, exiting

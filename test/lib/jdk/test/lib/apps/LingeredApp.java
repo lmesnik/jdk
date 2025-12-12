@@ -47,6 +47,7 @@ import jdk.test.lib.JDKToolFinder;
 import jdk.test.lib.Utils;
 import jdk.test.lib.process.OutputBuffer;
 import jdk.test.lib.process.StreamPumper;
+import jdk.test.lib.thread.TestThreadFactory;
 import jdk.test.lib.util.CoreUtils;
 
 /**
@@ -595,12 +596,8 @@ public class LingeredApp {
         return isReady;
     }
 
-    /**
-     * This part is the application itself. First arg is optional "forceCrash".
-     * Following arg is the lock file name.
-     */
     @SuppressWarnings("restricted")
-    public static void main(String args[]) {
+    public static void run(String args[]) {
         boolean forceCrash = false;
 
         if (args.length == 0) {
@@ -653,5 +650,21 @@ public class LingeredApp {
         }
 
         System.exit(0);
+    }
+
+    /**
+     * This part is the application itself. First arg is optional "forceCrash".
+     * Following arg is the lock file name.
+     *
+     * The tests should expect to find 'mainThread' that can be either platofrm or virtual.
+     */
+    public static void main(String[] args) {
+        Thread mainThread = TestThreadFactory.newThread(() -> run(args), "mainThread");
+        mainThread.start();
+        try {
+            mainThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
