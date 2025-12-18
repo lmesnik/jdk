@@ -22,6 +22,7 @@
  */
 package nsk.monitoring.ThreadMXBean.GetThreadCpuTime;
 
+import jdk.test.lib.thread.TestThreadFactory;
 import nsk.share.*;
 import nsk.monitoring.share.*;
 import nsk.monitoring.ThreadMXBean.*;
@@ -78,15 +79,29 @@ public class BaseBehaviorTest extends ThreadMXBeanTestBase {
                     + "return -1 if threadCpuTimeEnabled is set to false. "
                     + "Recieved : " + resultArr[0]);
             threadMXBean.setThreadCpuTimeEnabled(true);
-            // Expect > 0 value for running threads
+            // Expect > 0 value for running platform threads and -1 for virtual threads.
             resultArr = threadMXBean.getThreadCpuTime(idArr);
-            if (resultArr[0] < 0)
-                throw new TestFailure("Failure! getThreadCpuTime(long[] ids) should "
-                    + "return > 0 value for RUNNING thread. Recieved : " + resultArr[0]);
+            if (thread.isVirtual()) {
+                if (resultArr[0] != -1)
+                    throw new TestFailure("Failure! getThreadCpuTime(long[] ids) should "
+                            + "return -1 for virtual threads."
+                            + "Recieved : " + resultArr[0]);
+            } else {
+                if (resultArr[0] < 0)
+                    throw new TestFailure("Failure! getThreadCpuTime(long[] ids) should "
+                            + "return > 0 value for RUNNING thread. Recieved : " + resultArr[0]);
+            }
             resultArr = threadMXBean.getThreadUserTime(idArr);
-            if (resultArr[0] < 0)
-                throw new TestFailure("Failure! getThreadUserTime(long[] ids) should "
-                    + "return > 0 value for RUNNING thread. Recieved : " + resultArr[0]);
+            if (thread.isVirtual()) {
+                if (resultArr[0] != -1)
+                    throw new TestFailure("Failure! getThreadCpuTime(long[] ids) should "
+                            + "return -1 for virtual threads."
+                            + "Recieved : " + resultArr[0]);
+            } else {
+                if (resultArr[0] < 0)
+                    throw new TestFailure("Failure! getThreadUserTime(long[] ids) should "
+                            + "return > 0 value for RUNNING thread. Recieved : " + resultArr[0]);
+            }
         } finally {
             // Let thread finish
             handler.finish();

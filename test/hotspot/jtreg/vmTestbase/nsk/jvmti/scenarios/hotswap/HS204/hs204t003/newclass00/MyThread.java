@@ -21,7 +21,10 @@
  * questions.
  */
 package nsk.jvmti.scenarios.hotswap.HS204.hs204t003;
-public class MyThread extends Thread {
+
+import jdk.test.lib.thread.ThreadWrapper;
+
+public class MyThread extends ThreadWrapper {
         private static volatile int intState=0;
     public static int count=100;
     static {

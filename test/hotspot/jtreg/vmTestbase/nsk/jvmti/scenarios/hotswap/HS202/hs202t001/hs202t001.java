@@ -80,8 +80,8 @@ public class hs202t001 extends RedefineAgent {
                 add(myObject, 1);
             }
             myObject.stop(true);
-            if( popThreadFrame(mt)) {;
-                resumeThread(mt);
+            if( popThreadFrame(mt.getThread())) {;
+                resumeThread(mt.getThread());
             } // Popoing will not be possible on ..
             mt.join();
             state = myObject.getAge();

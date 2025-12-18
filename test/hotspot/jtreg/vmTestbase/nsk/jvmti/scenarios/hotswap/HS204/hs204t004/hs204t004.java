@@ -51,6 +51,8 @@
 
 package nsk.jvmti.scenarios.hotswap.HS204.hs204t004;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import jdk.test.lib.thread.ThreadWrapper;
 import nsk.share.jvmti.RedefineAgent;
 
 public class hs204t004 extends RedefineAgent {
@@ -71,7 +73,7 @@ public class hs204t004 extends RedefineAgent {
                         mt.start();
                         while(!MyThread.resume.get()) ;
                         Thread.sleep(10000);
-                        popFrame(mt);
+                        popFrame(mt.getThread());
                         mt.join();
                 } catch(Exception exp) {
                         exp.printStackTrace();
@@ -88,7 +90,7 @@ public class hs204t004 extends RedefineAgent {
         public static native boolean popFrame(Thread thread);
 }
 
-class MyThread extends Thread {
+class MyThread extends ThreadWrapper {
         public static AtomicBoolean resume = new AtomicBoolean(false);
         public String name="MyThread";
 

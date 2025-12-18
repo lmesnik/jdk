@@ -70,15 +70,15 @@ public class hs202t002 extends RedefineAgent {
         try {
             mt.start();
 
-            while (!isThreadSuspended(mt)) {
+            while (!isThreadSuspended(mt.getThread())) {
                 Thread.yield();
             }
 
-            if (!popThreadFrame(mt)) {
+            if (!popThreadFrame(mt.getThread())) {
                 throw new RuntimeException("error in popframe operation!");
             }
 
-            if (!resumeThread(mt)) {
+            if (!resumeThread(mt.getThread())) {
                 throw new RuntimeException("error in resuming thread!");
             }
 

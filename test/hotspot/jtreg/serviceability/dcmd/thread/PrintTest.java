@@ -26,6 +26,7 @@ import org.testng.annotations.Test;
 import org.testng.Assert;
 
 import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.thread.ThreadWrapper;
 
 import jdk.test.lib.dcmd.CommandExecutor;
 import jdk.test.lib.dcmd.JMXExecutor;
@@ -59,7 +60,7 @@ public class PrintTest {
         }
     }
 
-    class MonitorThread extends Thread {
+    class MonitorThread extends ThreadWrapper {
         Object lock = new Object();
 
         public void run() {
@@ -74,7 +75,7 @@ public class PrintTest {
         }
     }
 
-    class LockThread extends Thread {
+    class LockThread extends ThreadWrapper {
         ReentrantLock lock = new ReentrantLock();
 
         public void run() {

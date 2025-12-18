@@ -22,9 +22,10 @@
  */
 package nsk.jvmti.scenarios.hotswap.HS104.hs104t002;
 
+import jdk.test.lib.thread.ThreadWrapper;
 import nsk.share.Wicket;
 
-public class MyThread extends Thread {
+public class MyThread extends ThreadWrapper {
 
     int threadState;
     private  Wicket wicket;

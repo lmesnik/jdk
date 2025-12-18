@@ -28,6 +28,7 @@ package gc.g1;
  * @summary Test that issuing a periodic collection while the GC locker is
  * held does not crash the VM.
  * @requires vm.gc.G1
+ * @library /test/lib
  * @run main/othervm/native
  *    -Xbootclasspath/a:.
  *    -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI
@@ -43,6 +44,8 @@ package gc.g1;
  *    -Xlog:gc*,gc+periodic=debug
  *    gc.g1.TestPeriodicCollectionJNI
  */
+
+import jdk.test.lib.thread.ThreadWrapper;
 
 public class TestPeriodicCollectionJNI {
     static { System.loadLibrary("TestPeriodicCollectionJNI"); }
@@ -72,7 +75,7 @@ public class TestPeriodicCollectionJNI {
     }
 }
 
-class BlockInNative extends Thread {
+class BlockInNative extends ThreadWrapper {
 
     public void run() {
         TestPeriodicCollectionJNI.block();

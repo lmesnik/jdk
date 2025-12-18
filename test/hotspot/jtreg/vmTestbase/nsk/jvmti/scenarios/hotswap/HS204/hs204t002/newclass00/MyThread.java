@@ -21,7 +21,10 @@
  * questions.
  */
 package nsk.jvmti.scenarios.hotswap.HS204.hs204t002;
-public class MyThread extends Thread{
+
+import jdk.test.lib.thread.ThreadWrapper;
+
+public class MyThread extends ThreadWrapper {
         public static int value=200;
         static {
                 System.out.println("  ... Break Point here..");

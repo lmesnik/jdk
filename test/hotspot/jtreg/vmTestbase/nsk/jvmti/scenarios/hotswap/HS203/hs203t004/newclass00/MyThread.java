@@ -23,7 +23,9 @@
 
 package nsk.jvmti.scenarios.hotswap.HS203.hs203t004;
 
-public class MyThread extends Thread {
+import jdk.test.lib.thread.ThreadWrapper;
+
+public class MyThread extends ThreadWrapper {
 
     public static volatile boolean stop = true;
 

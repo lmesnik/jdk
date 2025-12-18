@@ -47,6 +47,7 @@ import jdk.test.lib.JDKToolFinder;
 import jdk.test.lib.Utils;
 import jdk.test.lib.process.OutputBuffer;
 import jdk.test.lib.process.StreamPumper;
+import jdk.test.lib.thread.TestThreadFactory;
 import jdk.test.lib.util.CoreUtils;
 
 /**
@@ -359,7 +360,7 @@ public class LingeredApp {
             throws IOException {
 
         List<String> cmd = runAppPrepare(vmOpts);
-
+        cmd.add("-Dapp.name=" + this.getClass().getName());
         runAddAppName(cmd);
         cmd.add(lockFileName);
         if (forceCrash) {
@@ -600,7 +601,7 @@ public class LingeredApp {
      * Following arg is the lock file name.
      */
     @SuppressWarnings("restricted")
-    public static void main(String args[]) {
+    public static void run(String args[]) {
         boolean forceCrash = false;
 
         if (args.length == 0) {
@@ -653,5 +654,17 @@ public class LingeredApp {
         }
 
         System.exit(0);
+    }
+
+    public static void main(String[] args) {
+        String appName = System.getProperty("app.name");
+        LingeredApp app = (LingeredApp) Class.forName(appName).getDeclaredConstructor().newInstance();
+        Thread mainThread = TestThreadFactory.newThread(() -> run(args));
+        mainThread.start();
+        try {
+            mainThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

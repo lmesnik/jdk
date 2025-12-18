@@ -25,6 +25,8 @@ package nsk.jvmti.scenarios.hotswap.HS201;
 
 import java.io.*;
 import java.util.*;
+
+import jdk.test.lib.thread.ThreadWrapper;
 import nsk.share.*;
 import nsk.share.jvmti.*;
 
@@ -187,7 +189,7 @@ public class hs201t003 extends DebugeeClass {
     /**
      * Class executing a class to be redefined.
      */
-    class RedefClassWrapper extends Thread {
+    class RedefClassWrapper extends ThreadWrapper {
         boolean stopMe = false;
 
         RedefClassWrapper() {

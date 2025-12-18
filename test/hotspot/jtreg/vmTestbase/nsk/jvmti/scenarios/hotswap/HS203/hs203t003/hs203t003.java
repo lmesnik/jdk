@@ -93,7 +93,7 @@ public class hs203t003 extends RedefineAgent {
                 Thread.sleep(100);
             }
             // Wait for the thread to be suspended.
-            while (!isSuspended(mt)) {
+            while (!isSuspended(mt.getThread())) {
                 if (!agentStatus()) {
                     System.out.println("Failed to suspend thread");
                     return passed;
@@ -101,12 +101,12 @@ public class hs203t003 extends RedefineAgent {
                 Thread.sleep(100);
             }
             // Pop the frame.
-            if (!popThreadFrame(mt)) {
+            if (!popThreadFrame(mt.getThread())) {
                 System.out.println("Failed to pop a frame = "
                                    + mt.threadState);
             }
             // Resume the thread.
-            if(!resumeThread(mt)) {
+            if(!resumeThread(mt.getThread())) {
                 System.out.println("Failed to resume the thread = "
                                    + mt.threadState);
             }

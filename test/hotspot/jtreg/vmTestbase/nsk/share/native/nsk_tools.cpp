@@ -99,8 +99,8 @@ void nsk_vdisplay(const char format[], va_list ap) {
 
 void nsk_lvdisplay(const char file[], int line, const char format[], va_list ap)
 {
-    if (!nsk_context.verbose)
-        return;
+//    if (!nsk_context.verbose)
+//        return;
     if (file != nullptr)
         (void) nsk_printf("- %s, %d: ",file_basename(file),line);
     (void) nsk_vprintf(format,ap);

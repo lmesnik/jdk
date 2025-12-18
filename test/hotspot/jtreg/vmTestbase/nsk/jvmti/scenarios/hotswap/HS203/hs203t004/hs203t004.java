@@ -82,11 +82,11 @@ public class hs203t004 extends RedefineAgent {
                 Thread.yield();
             }
 
-            suspendThread(myThread);
+            suspendThread(myThread.getThread());
 
-            popThreadFrame(myThread);
+            popThreadFrame(myThread.getThread());
 
-            resumeThread(myThread);
+            resumeThread(myThread.getThread());
 
             MyThread.stop = false;
             myThread.join();

@@ -26,6 +26,7 @@ package nsk.jvmti.scenarios.allocation.AP06;
 import java.io.*;
 import java.lang.reflect.*;
 
+import jdk.test.lib.thread.ThreadWrapper;
 import nsk.share.*;
 import nsk.share.jvmti.*;
 
@@ -78,7 +79,7 @@ public class ap06t001 extends DebugeeClass {
     }
 }
 
-class ap06t001Thread extends Thread {
+class ap06t001Thread extends ThreadWrapper {
     public void run() {
         ap06t001.log.display("Checked thread started.");
         ap06t001.startWicket.unlock();

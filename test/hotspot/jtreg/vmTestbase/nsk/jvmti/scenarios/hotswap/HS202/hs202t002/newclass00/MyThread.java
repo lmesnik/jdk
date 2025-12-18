@@ -21,7 +21,10 @@
  * questions.
  */
 package nsk.jvmti.scenarios.hotswap.HS202.hs202t002;
-public class MyThread extends Thread {
+
+import jdk.test.lib.thread.ThreadWrapper;
+
+public class MyThread extends ThreadWrapper {
     private int val = 100;
 
     public void run() {

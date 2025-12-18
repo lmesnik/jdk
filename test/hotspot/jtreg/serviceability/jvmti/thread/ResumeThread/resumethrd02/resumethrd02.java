@@ -38,6 +38,7 @@
  */
 
 import jdk.test.lib.jvmti.DebugeeClass;
+import jdk.test.lib.thread.ThreadWrapper;
 
 public class resumethrd02 extends DebugeeClass {
 
@@ -103,7 +104,7 @@ public class resumethrd02 extends DebugeeClass {
 /* =================================================================== */
 
 // basic class for tested threads
-class resumethrd02Thread extends Thread {
+class resumethrd02Thread extends ThreadWrapper {
     private volatile boolean threadReady = false;
     private volatile boolean shouldFinish = false;
 

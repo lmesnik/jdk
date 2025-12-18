@@ -25,6 +25,7 @@ package nsk.jvmti.scenarios.hotswap.HS102;
 
 import java.io.PrintStream;
 
+import jdk.test.lib.thread.ThreadWrapper;
 import nsk.share.*;
 import nsk.share.jvmti.*;
 
@@ -150,7 +151,7 @@ public class hs102t001 extends DebugeeClass {
 
 /* =================================================================== */
 
-class hs102t001Thread extends Thread {
+class hs102t001Thread extends ThreadWrapper {
     public Wicket startingBarrier = new Wicket();
     private volatile boolean flag = true;
     public int i;
