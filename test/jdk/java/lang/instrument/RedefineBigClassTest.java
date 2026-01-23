@@ -23,14 +23,14 @@
 
 /*
  * @test
- * @bug 7122253 8016838
- * @summary Retransform a big class.
+ * @bug 7121600 8016838
+ * @summary Redefine a big class.
  * @key intermittent
  * @modules java.instrument
  *          java.management
  * @library /test/lib
- * @build BigClass RetransformBigClassApp NMTHelper SimpleIdentityTransformer RetransformBigClassAgent
- * @run main/othervm/timeout=600 RetransformBigClassTest
+ * @build BigClass RedefineBigClassApp NMTHelper
+ * @run main/othervm/timeout=600 RedefineBigClassTest
  */
 
 import jdk.test.lib.JDKToolLauncher;
@@ -38,32 +38,32 @@ import jdk.test.lib.process.ProcessTools;
 import jdk.test.lib.process.OutputAnalyzer;
 import jdk.test.lib.Utils;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RetransformBigClassTest {
+public class RedefineBigClassTest {
 
-    private static final String AGENT_JAR = "RetransformBigClassAgent.jar";
-    private static final String MANIFEST = "RetransformBigClassAgent.mf";
-    private static final String APP_CLASS = "RetransformBigClassApp";
+    private static final String AGENT_JAR = "RedefineBigClassAgent.jar";
+    private static final String MANIFEST = "RedefineBigClassAgent.mf";
+    private static final String APP_CLASS = "RedefineBigClassApp";
 
     private static void buildAgentJar() throws Exception {
         Path manifestPath = Paths.get(MANIFEST);
         List<String> manifestLines = new ArrayList<>();
         manifestLines.add("Manifest-Version: 1.0");
-        manifestLines.add("Premain-Class: RetransformBigClassAgent");
-        manifestLines.add("Can-Retransform-Classes: true");
+        manifestLines.add("Premain-Class: RedefineBigClassAgent");
+        manifestLines.add("Can-Redefine-Classes: true");
         Files.write(manifestPath, manifestLines);
 
         JDKToolLauncher jar = JDKToolLauncher.create("jar")
                 .addToolArg("cvfm")
                 .addToolArg(AGENT_JAR)
                 .addToolArg(MANIFEST)
-                .addToolArg("SimpleIdentityTransformer.class")
-                .addToolArg("RetransformBigClassAgent.class");  // Assuming these are compiled
+                .addToolArg("BigClass.class");  // Assuming BigClass is compiled
         ProcessTools.executeCommand(jar.getCommand());
 
         Files.deleteIfExists(manifestPath);
@@ -97,7 +97,7 @@ public class RetransformBigClassTest {
         int result = output.getExitValue();
 
         if (result != 0) {
-            throw new RuntimeException("RetransformBigClassApp exited with status of " + result);
+            throw new RuntimeException("RedefineBigClassApp exited with status of " + result);
         }
 
         String mesg = "Exception";

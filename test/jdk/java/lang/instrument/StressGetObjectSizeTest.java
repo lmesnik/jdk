@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,14 +23,12 @@
 
 /*
  * @test
- * @bug 7122253 8016838
- * @summary Retransform a big class.
- * @key intermittent
+ * @bug 6572160
+ * @summary stress getObjectSize() API
  * @modules java.instrument
- *          java.management
  * @library /test/lib
- * @build BigClass RetransformBigClassApp NMTHelper SimpleIdentityTransformer RetransformBigClassAgent
- * @run main/othervm/timeout=600 RetransformBigClassTest
+ * @build StressGetObjectSizeApp
+ * @run main/othervm StressGetObjectSizeTest
  */
 
 import jdk.test.lib.JDKToolLauncher;
@@ -38,69 +36,67 @@ import jdk.test.lib.process.ProcessTools;
 import jdk.test.lib.process.OutputAnalyzer;
 import jdk.test.lib.Utils;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RetransformBigClassTest {
+public class StressGetObjectSizeTest {
 
-    private static final String AGENT_JAR = "RetransformBigClassAgent.jar";
-    private static final String MANIFEST = "RetransformBigClassAgent.mf";
-    private static final String APP_CLASS = "RetransformBigClassApp";
+    private static final String AGENT_JAR = "basicAgent.jar";
+    private static final String INSTRUMENTATION_HANDOFF = "InstrumentationHandoff";
+    private static final String MANIFEST = "basicAgent.mf";
+    private static final String APP_CLASS = "StressGetObjectSizeApp";
 
     private static void buildAgentJar() throws Exception {
-        Path manifestPath = Paths.get(MANIFEST);
-        List<String> manifestLines = new ArrayList<>();
-        manifestLines.add("Manifest-Version: 1.0");
-        manifestLines.add("Premain-Class: RetransformBigClassAgent");
-        manifestLines.add("Can-Retransform-Classes: true");
-        Files.write(manifestPath, manifestLines);
+        // Copy InstrumentationHandoff.java from TESTSRC
+        Path handoffSrc = Paths.get(Utils.TEST_SRC, INSTRUMENTATION_HANDOFF + ".java");
+        Path handoffDest = Paths.get(INSTRUMENTATION_HANDOFF + ".java");
+        Files.copy(handoffSrc, handoffDest);
 
+        // Compile it
+        JDKToolLauncher javac = JDKToolLauncher.create("javac")
+                .addToolArg("-g")
+                .addToolArg("-d")
+                .addToolArg(".")
+                .addToolArg(handoffDest.toString());
+        ProcessTools.executeCommand(javac.getCommand());
+
+        // Copy manifest from TESTSRC
+        Path manifestSrc = Paths.get(Utils.TEST_SRC, MANIFEST);
+        Path manifestDest = Paths.get(MANIFEST);
+        Files.copy(manifestSrc, manifestDest);
+
+        // Create jar
         JDKToolLauncher jar = JDKToolLauncher.create("jar")
                 .addToolArg("cvfm")
                 .addToolArg(AGENT_JAR)
                 .addToolArg(MANIFEST)
-                .addToolArg("SimpleIdentityTransformer.class")
-                .addToolArg("RetransformBigClassAgent.class");  // Assuming these are compiled
+                .addToolArg(INSTRUMENTATION_HANDOFF + ".class");
         ProcessTools.executeCommand(jar.getCommand());
 
-        Files.deleteIfExists(manifestPath);
-    }
-
-    private static String getNMTFlag() throws Exception {
-        try {
-            ProcessTools.executeTestJvm("-XX:NativeMemoryTracking=detail", "-version")
-                    .shouldHaveExitValue(0);
-            return "-XX:NativeMemoryTracking=detail";
-        } catch (Throwable t) {
-            return "-XX:NativeMemoryTracking=summary";
-        }
+        // Cleanup
+        Files.deleteIfExists(handoffDest);
+        Files.deleteIfExists(Paths.get(INSTRUMENTATION_HANDOFF + ".class"));
+        Files.deleteIfExists(manifestDest);
     }
 
     public static void main(String[] args) throws Exception {
         buildAgentJar();
 
-        String nmt = getNMTFlag();
-
         List<String> cmd = new ArrayList<>();
-        cmd.add("-Xlog:redefine+class+load=debug,redefine+class+load+exceptions=info");
-        cmd.add(nmt);
-        cmd.add("-javaagent:" + AGENT_JAR + "=BigClass.class");
+        cmd.add("-javaagent:" + AGENT_JAR);
         cmd.add("-classpath");
         cmd.add(Utils.TEST_CLASSES);
         cmd.add(APP_CLASS);
+        cmd.add(APP_CLASS);  // The app takes its own class name as arg
 
         OutputAnalyzer output = ProcessTools.executeTestJvm(cmd.toArray(new String[0]));
         output.reportDiagnosticSummary();
-        int result = output.getExitValue();
 
-        if (result != 0) {
-            throw new RuntimeException("RetransformBigClassApp exited with status of " + result);
-        }
-
-        String mesg = "Exception";
+        String mesg = "ASSERTION FAILED";
         if (output.getOutput().contains(mesg)) {
             throw new RuntimeException("FAIL: found '" + mesg + "' in the test output");
         } else {

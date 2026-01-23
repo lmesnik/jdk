@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2005, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -22,98 +22,103 @@
  */
 
 /*
- *
- *
- * Unit test for Instrumentation appendToSystemClassLoaderSearch. This
- * test does the following:
- *
- * 1. Creates a class loader to load class Foo. Execute Foo.doSomething
- *    which references a missing class Bar. The doSomething method
- *    should fail with NoClassDefFoundError.
- *
- * 2. Add Bar.jar to the system class path. Bar.jar contains Bar.
- *
- * 3. Create another class loader to load Foo. Execute Foo.doSomething.
- *    doSomething will load Bar.
- *
- * 4. Re-execute the first Foo's doSomething - it should fail a second
- *    time because the attempt to resolve Bar must fail with the same
- *    error as the first attempt.
- *
- * 5. De-reference both class loaders and execute System.gc(). We can't
- *    assert that the Foo classes will be unloaded but it serves to
- *    exercise the unload code path in HotSpot.
+ * @test
+ * @bug 6173575
+ * @summary Unit tests for appendToBootstrapClassLoaderSearch and appendToSystemClassLoaderSearch methods.
+ * @modules java.instrument
+ * @library /test/lib
+ * @build appendToClassLoaderSearch.ClassUnloadTest
+ * @run main/othervm appendToClassLoaderSearch.ClassUnloadTest
  */
-import java.lang.instrument.Instrumentation;
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import java.util.jar.JarFile;
+
+package appendToClassLoaderSearch;
+
+import jdk.test.lib.JDKToolLauncher;
+import jdk.test.lib.process.ProcessTools;
+import jdk.test.lib.process.OutputAnalyzer;
+import jdk.test.lib.Utils;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClassUnloadTest {
 
-    static Instrumentation ins;
+    private static final String OTHER_DIR = "other";
+    private static final String AGENT_JAR = "ClassUnloadTest.jar";
+    private static final String MANIFEST = "agent.mf";
+    private static final String FOO = "Foo.java";
+    private static final String BAR = "Bar.java";
+    private static final String BAR_JAR = "Bar.jar";
 
-    public static void main(String args[]) throws Exception {
-        String dir = args[0] + File.separator;
-        String jar = dir + args[1];
+    public static void main(String[] args) throws Exception {
+        Path otherDir = Paths.get(Utils.TEST_CLASSES, OTHER_DIR);
+        Files.createDirectories(otherDir);
 
-        System.out.println(jar);
+        // Write Foo.java
+        List<String> fooLines = new ArrayList<>();
+        fooLines.add("public class Foo {");
+        fooLines.add("    public static boolean doSomething() {");
+        fooLines.add("        try {");
+        fooLines.add("            Bar b = new Bar();");
+        fooLines.add("            return true;");
+        fooLines.add("        } catch (NoClassDefFoundError x) {");
+        fooLines.add("            return false;");
+        fooLines.add("        }");
+        fooLines.add("    }");
+        fooLines.add("}");
+        Files.write(otherDir.resolve(FOO), fooLines);
 
-        URL u = (new File(dir)).toURL();
-        URL urls[] = { u };
+        // Write Bar.java
+        List<String> barLines = new ArrayList<>();
+        barLines.add("public class Bar { }");
+        Files.write(otherDir.resolve(BAR), barLines);
 
-        // This should fail as Bar is not available
-        Invoker i1 = new Invoker(urls, "Foo", "doSomething");
-        Boolean result = (Boolean)i1.invoke((Object)null);
-        if (result.booleanValue()) {
-            throw new RuntimeException("Test configuration error - doSomething should not succeed");
-        }
+        // Compile Foo and Bar
+        JDKToolLauncher javac = JDKToolLauncher.create("javac")
+                .addToolArg("-d")
+                .addToolArg(otherDir.toString())
+                .addToolArg(otherDir.resolve(FOO).toString())
+                .addToolArg(otherDir.resolve(BAR).toString());
+        ProcessTools.executeCommand(javac.getCommand());
 
-        // put Bar on the system class path
-        ins.appendToSystemClassLoaderSearch( new JarFile(jar) );
+        // Create Bar.jar and remove Bar.class
+        JDKToolLauncher jar = JDKToolLauncher.create("jar")
+                .addToolArg("cf")
+                .addToolArg(otherDir.resolve(BAR_JAR).toString())
+                .addToolArg("Bar.class");
+        ProcessTools.executeCommand(jar.getCommand(), otherDir.toString());
+        Files.delete(otherDir.resolve("Bar.class"));
 
-        // This should fail even though Bar is now available
-        result = (Boolean)i1.invoke((Object)null);
-        if (result.booleanValue()) {
-            throw new RuntimeException("Test configuration error - doSomething should not succeed");
-        }
+        // Create manifest for agent
+        Path manifestPath = Paths.get(MANIFEST);
+        List<String> manifestLines = new ArrayList<>();
+        manifestLines.add("Premain-Class: appendToClassLoaderSearch.ClassUnloadTest");
+        Files.write(manifestPath, manifestLines);
 
-        // This should succeed because this is a different Foo
-        Invoker i2 = new Invoker(urls, "Foo", "doSomething");
-        result = (Boolean)i2.invoke((Object)null);
-        if (!result.booleanValue()) {
-            throw new RuntimeException("Test configuration error - doSomething did not succeed");
-        }
+        // Create agent jar
+        JDKToolLauncher agentJar = JDKToolLauncher.create("jar")
+                .addToolArg("cfm")
+                .addToolArg(AGENT_JAR)
+                .addToolArg(MANIFEST)
+                .addToolArg("-C")
+                .addToolArg(Utils.TEST_CLASSES)
+                .addToolArg("appendToClassLoaderSearch/ClassUnloadTest.class");
+        ProcessTools.executeCommand(agentJar.getCommand());
 
-        // Exercise some class unloading
-        i1 = i2 = null;
-        System.gc();
-    }
+        // Run the test
+        List<String> cmd = new ArrayList<>();
+        cmd.add("-Xlog:class+unload");
+        cmd.add("-javaagent:" + AGENT_JAR);
+        cmd.add("appendToClassLoaderSearch.ClassUnloadTest");
+        cmd.add(otherDir.toString());
+        cmd.add(BAR_JAR);
 
-    static class Invoker {
-
-        URLClassLoader cl;
-        Method m;
-
-        public Invoker(URL urls[], String cn, String mn, Class ... params)
-            throws ClassNotFoundException, NoSuchMethodException
-        {
-            cl = new URLClassLoader(urls);
-            Class c = Class.forName("Foo", true, cl);
-            m = c.getDeclaredMethod(mn, params);
-        }
-
-        public Object invoke(Object ... args)
-            throws IllegalAccessException, InvocationTargetException
-        {
-            return m.invoke(args);
-        }
-    }
-
-    public static void premain(String args, Instrumentation i) {
-        ins = i;
+        OutputAnalyzer output = ProcessTools.executeTestJvm(cmd.toArray(new String[0]));
+        output.reportDiagnosticSummary();
+        output.shouldHaveExitValue(0);  // Assuming the test passes if exit 0 and proper unloading
     }
 }

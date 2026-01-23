@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, 2024, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008, 2024, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -23,14 +23,12 @@
 
 /*
  * @test
- * @bug 7122253 8016838
- * @summary Retransform a big class.
- * @key intermittent
+ * @bug 6667089
+ * @summary Reflexive invocation of newly added methods broken.
  * @modules java.instrument
- *          java.management
  * @library /test/lib
- * @build BigClass RetransformBigClassApp NMTHelper SimpleIdentityTransformer RetransformBigClassAgent
- * @run main/othervm/timeout=600 RetransformBigClassTest
+ * @build RedefineMethodAddInvokeApp RedefineMethodAddInvokeAgent RedefineMethodAddInvokeTarget
+ * @run main RedefineMethodAddInvokeTest
  */
 
 import jdk.test.lib.JDKToolLauncher;
@@ -44,50 +42,63 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RetransformBigClassTest {
+public class RedefineMethodAddInvokeTest {
 
-    private static final String AGENT_JAR = "RetransformBigClassAgent.jar";
-    private static final String MANIFEST = "RetransformBigClassAgent.mf";
-    private static final String APP_CLASS = "RetransformBigClassApp";
+    private static final String AGENT_JAR = "RedefineMethodAddInvokeAgent.jar";
+    private static final String MANIFEST = "RedefineMethodAddInvokeAgent.mf";
+    private static final String APP_CLASS = "RedefineMethodAddInvokeApp";
 
     private static void buildAgentJar() throws Exception {
         Path manifestPath = Paths.get(MANIFEST);
         List<String> manifestLines = new ArrayList<>();
         manifestLines.add("Manifest-Version: 1.0");
-        manifestLines.add("Premain-Class: RetransformBigClassAgent");
-        manifestLines.add("Can-Retransform-Classes: true");
+        manifestLines.add("Premain-Class: RedefineMethodAddInvokeAgent");
+        manifestLines.add("Can-Redefine-Classes: true");
         Files.write(manifestPath, manifestLines);
 
         JDKToolLauncher jar = JDKToolLauncher.create("jar")
                 .addToolArg("cvfm")
                 .addToolArg(AGENT_JAR)
                 .addToolArg(MANIFEST)
-                .addToolArg("SimpleIdentityTransformer.class")
-                .addToolArg("RetransformBigClassAgent.class");  // Assuming these are compiled
+                .addToolArg("RedefineMethodAddInvokeAgent.class");  // Assuming compiled
         ProcessTools.executeCommand(jar.getCommand());
 
         Files.deleteIfExists(manifestPath);
     }
 
-    private static String getNMTFlag() throws Exception {
-        try {
-            ProcessTools.executeTestJvm("-XX:NativeMemoryTracking=detail", "-version")
-                    .shouldHaveExitValue(0);
-            return "-XX:NativeMemoryTracking=detail";
-        } catch (Throwable t) {
-            return "-XX:NativeMemoryTracking=summary";
-        }
+    private static void compileRedefinedClasses() throws Exception {
+        // Compile version 1
+        Path target1Src = Paths.get(Utils.TEST_SRC, "RedefineMethodAddInvokeTarget_1.java");
+        Path target1Dest = Paths.get("RedefineMethodAddInvokeTarget.java");
+        Files.copy(target1Src, target1Dest);
+        JDKToolLauncher javac1 = JDKToolLauncher.create("javac")
+                .addToolArg("-d")
+                .addToolArg(".")
+                .addToolArg(target1Dest.toString());
+        ProcessTools.executeCommand(javac1.getCommand());
+        Files.move(Paths.get("RedefineMethodAddInvokeTarget.class"), Paths.get("RedefineMethodAddInvokeTarget_1.class"));
+        Files.move(target1Dest, Paths.get("RedefineMethodAddInvokeTarget_1.java"));
+
+        // Compile version 2
+        Path target2Src = Paths.get(Utils.TEST_SRC, "RedefineMethodAddInvokeTarget_2.java");
+        Path target2Dest = Paths.get("RedefineMethodAddInvokeTarget.java");
+        Files.copy(target2Src, target2Dest);
+        JDKToolLauncher javac2 = JDKToolLauncher.create("javac")
+                .addToolArg("-d")
+                .addToolArg(".")
+                .addToolArg(target2Dest.toString());
+        ProcessTools.executeCommand(javac2.getCommand());
+        Files.move(Paths.get("RedefineMethodAddInvokeTarget.class"), Paths.get("RedefineMethodAddInvokeTarget_2.class"));
+        Files.move(target2Dest, Paths.get("RedefineMethodAddInvokeTarget_2.java"));
     }
 
     public static void main(String[] args) throws Exception {
         buildAgentJar();
-
-        String nmt = getNMTFlag();
+        compileRedefinedClasses();
 
         List<String> cmd = new ArrayList<>();
-        cmd.add("-Xlog:redefine+class+load=debug,redefine+class+load+exceptions=info");
-        cmd.add(nmt);
-        cmd.add("-javaagent:" + AGENT_JAR + "=BigClass.class");
+        cmd.add("-javaagent:" + AGENT_JAR);
+        cmd.add("-XX:+AllowRedefinitionToAddDeleteMethods");
         cmd.add("-classpath");
         cmd.add(Utils.TEST_CLASSES);
         cmd.add(APP_CLASS);
@@ -97,7 +108,7 @@ public class RetransformBigClassTest {
         int result = output.getExitValue();
 
         if (result != 0) {
-            throw new RuntimeException("RetransformBigClassApp exited with status of " + result);
+            throw new RuntimeException("The run failed with exit code " + result);
         }
 
         String mesg = "Exception";
