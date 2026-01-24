@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1997, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997, 2026, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -1451,6 +1451,11 @@ void CodeCache::report_codemem_full(CodeBlobType code_blob_type, bool print) {
       if (PrintCodeHeapAnalytics) {
         CompileBroker::print_heapinfo(tty, "all", 4096); // details, may be a lot!
       }
+    }
+    if (JvmtiExport::should_post_resource_exhausted()) {
+      JvmtiExport::post_resource_exhausted(
+        JVMTI_RESOURCE_EXHAUSTED_OOM_ERROR ,
+        "CodeCache is full. Compiler has been disabled.");
     }
   }
 
