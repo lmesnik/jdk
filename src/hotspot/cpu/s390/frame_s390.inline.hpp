@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2025, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016, 2026, Oracle and/or its affiliates. All rights reserved.
  * Copyright (c) 2016, 2024 SAP SE. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
@@ -87,6 +87,11 @@ inline frame::frame(intptr_t* sp, address pc, intptr_t* unextended_sp, intptr_t*
 
 inline frame::frame(intptr_t* sp) : frame(sp, nullptr) {}
 
+inline frame::frame(intptr_t* sp, intptr_t* unextended_sp, intptr_t* fp, address pc, CodeBlob* cb, const ImmutableOopMap* oop_map)
+  :_sp(sp), _pc(pc), _cb(cb), _oop_map(oop_map), _on_heap(false), DEBUG_ONLY(_frame_index(-1) COMMA) _unextended_sp(unextended_sp), _fp(fp) {
+  setup();
+}
+
 // Generic constructor. Used by pns() in debug.cpp only
 #ifndef PRODUCT
 inline frame::frame(void* sp, void* pc, void* unextended_sp)
@@ -128,10 +133,10 @@ inline void frame::interpreter_frame_set_monitors(BasicObjectLock* monitors) {
 
 // Return unique id for this frame. The id must have a value where we
 // can distinguish identity and younger/older relationship. null
-// represents an invalid (incomparable) frame.
+// represents an invalid (incomparable) frame. Should not be called for heap frames.
 inline intptr_t* frame::id(void) const {
   // Use _fp. _sp or _unextended_sp wouldn't be correct due to resizing.
-  return _fp;
+  return real_fp();
 }
 
 // Return true if this frame is older (less recent activation) than
@@ -370,5 +375,43 @@ template <typename RegisterMapT>
 void frame::update_map_with_saved_link(RegisterMapT* map, intptr_t** link_addr) {
   Unimplemented();
 }
+
+#if INCLUDE_JFR
+
+// Static helper routines
+inline intptr_t* frame::sender_sp(intptr_t* fp) { return fp; }
+
+// Extract common_abi parts.
+inline intptr_t* frame::fp(const intptr_t* sp) {
+  assert(sp != nullptr, "invariant");
+  return reinterpret_cast<intptr_t*>(((z_common_abi*)sp)->callers_sp);
+}
+
+inline intptr_t* frame::link(const intptr_t* fp) { return frame::fp(fp); }
+
+inline address frame::return_address(const intptr_t* sp) {
+  assert(sp != nullptr, "invariant");
+  return reinterpret_cast<address>(((z_common_abi*)sp)->return_pc);
+}
+
+inline address frame::interpreter_return_address(const intptr_t* fp) { return frame::return_address(fp); }
+
+inline address frame::interpreter_bcp(const intptr_t* fp) {
+  assert(fp != nullptr, "invariant");
+  return reinterpret_cast<address>(*(fp + _z_ijava_idx(bcp)));
+}
+
+inline intptr_t* frame::interpreter_sender_sp(const intptr_t* fp) {
+  assert(fp != nullptr, "invariant");
+  return reinterpret_cast<intptr_t*>(*(fp + _z_ijava_idx(sender_sp)));
+}
+
+inline bool frame::is_interpreter_frame_setup_at(const intptr_t* fp, const void* sp) {
+  assert(fp != nullptr, "invariant");
+  assert(sp != nullptr, "invariant");
+  return sp <= fp - ((frame::z_ijava_state_size + frame::z_top_ijava_frame_abi_size) >> LogBytesPerWord);
+}
+
+#endif // INCLUDE_JFR
 
 #endif // CPU_S390_FRAME_S390_INLINE_HPP

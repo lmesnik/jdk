@@ -306,9 +306,9 @@ TEST_VM(Arena, random_allocs) {
   }
 
   // Free temp data
-  FREE_C_HEAP_ARRAY(char*, ptrs);
-  FREE_C_HEAP_ARRAY(size_t, sizes);
-  FREE_C_HEAP_ARRAY(size_t, alignments);
+  FREE_C_HEAP_ARRAY(ptrs);
+  FREE_C_HEAP_ARRAY(sizes);
+  FREE_C_HEAP_ARRAY(alignments);
 }
 
 #ifndef LP64
@@ -380,4 +380,14 @@ TEST_VM(Arena, different_chunk_sizes) {
     Arena ar6(mtTest, Arena::Tag::tag_other, random_arena_chunk_size());
     Arena ar7(mtTest, Arena::Tag::tag_other, random_arena_chunk_size());
   }
+}
+
+TEST_VM(Arena, string_duplicate)
+{
+  char testString[] = "this is a test string";
+  Arena ar(mtTest);
+  auto copy = ar.strdup(&testString[0]);
+  int result = strcmp(testString, copy);
+  ASSERT_TRUE(0 == result);
+  ASSERT_NE(copy, &testString[0]);
 }
